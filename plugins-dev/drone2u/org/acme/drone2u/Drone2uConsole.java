@@ -33,15 +33,10 @@
 package org.acme.drone2u;
 
 import java.awt.event.ActionEvent;
-import java.io.Console;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-
-import pt.lsts.imc.Abort;
-import pt.lsts.neptus.comm.manager.imc.ImcSystem;
-import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
+import pt.lsts.imc.PlanControl;
 import pt.lsts.neptus.console.ConsoleLayout;
 import pt.lsts.neptus.console.ConsolePanel;
 import pt.lsts.neptus.i18n.I18n;
@@ -68,38 +63,31 @@ public class Drone2uConsole extends ConsolePanel{
         super(console);
     }
 
-    /* (non-Javadoc)
-     * @see pt.lsts.neptus.console.ConsolePanel#cleanSubPanel()
-     */
+
     @Override
     public void cleanSubPanel() {
         // TODO Auto-generated method stub
 
     }
 
-    /* (non-Javadoc)
-     * @see pt.lsts.neptus.console.ConsolePanel#initSubPanel()
-     */
+
     @Override
     public void initSubPanel() {
-        removeAll();
-        
-        ConsoleLayout console = getConsole();
+        removeAll();        
 
         Action newPointAction = new AbstractAction(I18n.text("New Goto point...")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GetGotoPoint gt = new GetGotoPoint();        
                 PluginUtils.editPluginProperties(gt, true);
-                System.out.println(gt.buildCommand());
-
+                
+                PlanControl pc = gt.buildCommand(getConsole().getMission());                
+                getConsole().getImcMsgManager().sendMessageToVehicle(pc, "x8-02", null);
             }
-
         };
 
-        JButton newPoint = new JButton(newPointAction);
-
-        add(newPoint);
+        JButton newPointButton = new JButton(newPointAction);        
+        add(newPointButton);
 
     }
 

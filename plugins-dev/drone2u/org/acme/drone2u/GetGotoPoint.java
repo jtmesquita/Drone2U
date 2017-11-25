@@ -27,20 +27,20 @@
  *
  * For more information please see <http://lsts.fe.up.pt/neptus>.
  *
- * Author: pedro
- * 21/11/2017
+ * Author: joao
+ * 15/11/2017
  */
 package org.acme.drone2u;
 
-import javax.swing.JOptionPane;
-
 import com.l2fprod.common.propertysheet.DefaultProperty;
 import com.l2fprod.common.propertysheet.Property;
+import pt.lsts.imc.PlanControl;
+import pt.lsts.imc.PlanSpecification;
+import pt.lsts.neptus.comm.IMCSendMessageUtils;
 import pt.lsts.neptus.gui.PropertiesProvider;
-import pt.lsts.neptus.gui.VehicleChooser;
-import pt.lsts.neptus.i18n.I18n;
-import pt.lsts.neptus.mp.Maneuver;
+import pt.lsts.neptus.mp.ManeuverLocation;
 import pt.lsts.neptus.mp.Maneuver.SPEED_UNITS;
+import pt.lsts.neptus.mp.maneuvers.Goto;
 import pt.lsts.neptus.mp.templates.PlanCreator;
 import pt.lsts.neptus.plugins.NeptusProperty;
 import pt.lsts.neptus.plugins.PluginDescription;
@@ -48,98 +48,76 @@ import pt.lsts.neptus.plugins.PluginUtils;
 import pt.lsts.neptus.types.coord.LocationType;
 import pt.lsts.neptus.types.mission.MissionType;
 import pt.lsts.neptus.types.mission.plan.PlanType;
-import pt.lsts.neptus.types.vehicle.VehicleType;
-import pt.lsts.neptus.types.vehicle.VehiclesHolder;
-import pt.lsts.neptus.util.GuiUtils;
 
-import pt.lsts.neptus.mp.maneuvers.Goto;
-import pt.lsts.neptus.mp.ManeuverLocation;
-import pt.lsts.neptus.console.ConsoleLayout;
-import pt.lsts.neptus.console.ConsolePanel;
-import pt.lsts.neptus.console.plugins.planning.*;
 
 /**
- * @author pedro
+ * @author joao
  *
  */
-public class GetGotoPoint implements PropertiesProvider{
+@PluginDescription(name = "Define point")
+public class GetGotoPoint implements PropertiesProvider {   
 
-    // variàveis
 
     @NeptusProperty(name = "Destination")
     LocationType dest = new LocationType();
-
+    
     @NeptusProperty
     double depth = 0;
-
+    
     @NeptusProperty
-    double speed = 1.2;
-
-
-
+    double speed = 1.2;    
+    
     public String getCommand() {
-        return "Go 123pedro123";
+        return "go";
     }
-
-
-    public DefaultProperty[] getProperties1() {
+    
+    public DefaultProperty[] getProperties() {
         return PluginUtils.getPluginProperties(this);
     }
-
-    public String buildCommand() {
-        Property[] props = getProperties1();
-
-        System.out.println(props.toString());
-        String ret = getCommand ()+" ";
-        boolean added = false;
-
+    
+    public PlanControl buildCommand(MissionType mt) {
+        Property[] props = getProperties();
+        Goto ponto1 = new Goto();
+        ManeuverLocation maneuverLoc = null;
         
-        //Drone2uPlanEditor plan_editor = new Drone2uPlanEditor(getConsole());
-
-        for (Property p : props) {
-            if (added)
-                ret +=";";
+        for (Property p : props) {            
             if (p.getType() == LocationType.class) {
-                LocationType loc = (LocationType)p.getValue();       // já tenho a localização para onde quero ir
+                LocationType loc = (LocationType)p.getValue();
                 loc.convertToAbsoluteLatLonDepth();
-                ret +="lat="+GuiUtils.getNeptusDecimalFormat(8).format(loc.getLatitudeDegs());
-                ret +=";lon="+GuiUtils.getNeptusDecimalFormat(8).format(loc.getLongitudeDegs());
-
-                dest = loc;
-
-                //ManeuverLocation maneuver = new ManeuverLocation(loc);
-
-                //point.setManeuverLocation(maneuver);
-            }
-            else {
-                ret += p.getName()+"="+p.getValue();
-
-                if( p.getName() == "speed")
-                {
-                    speed = Double.parseDouble(p.getValue().toString());
-                    System.out.println("speed variavel: " +speed);
-                }
                 
-                if( p.getName() == "depth")
-                {
-                    depth = Double.parseDouble(p.getValue().toString());
-                    System.out.println("height variavel: " +depth);
-                }
-                
+                maneuverLoc = new ManeuverLocation(loc);                
+                ponto1.setManeuverLocation(maneuverLoc);
             }
-            added = true;
+            
+            if(p.getName() == "speed") {
+                ponto1.setSpeed((double)p.getValue());
+            }
+            
+            if(p.getName() == "depth") {
+                maneuverLoc.setZ(10);
+                maneuverLoc.setZUnits(ManeuverLocation.Z_UNITS.DEPTH);                
+            } 
         }
         
-        dest.setHeight(depth);
+        int reqId = IMCSendMessageUtils.getNextRequestId(); 
+        PlanControl pc = new PlanControl(); 
+        pc.setType(PlanControl.TYPE.REQUEST);
+        pc.setOp(PlanControl.OP.START);
+        pc.setRequestId(reqId);
         
-        return ret;
-    }
-   
-
+        PlanType neptusPlan = new PlanType(mt);
+        neptusPlan.getGraph().addManeuver(ponto1);
+        neptusPlan.addVehicle("x8-02");
+        
+        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());
+        pc.setPlanId(neptusPlan.getId());
+        pc.setArg(pSpec);
+ 
+        return pc;       
+    }    
+    
     public PlanType resultingPlan(MissionType mt) {
-        
         PlanCreator planCreator = new PlanCreator(mt);
-        
         planCreator.setSpeed(speed, SPEED_UNITS.METERS_PS);
         planCreator.setLocation(dest);
         planCreator.setDepth(depth);
@@ -149,8 +127,7 @@ public class GetGotoPoint implements PropertiesProvider{
         return pt;        
     }
 
-
-
+   
     public void setCenter(LocationType loc) {
         dest = new LocationType(loc);
     }
@@ -158,24 +135,20 @@ public class GetGotoPoint implements PropertiesProvider{
     public static void main(String[] args) {
         GetGotoPoint gt = new GetGotoPoint();        
         PluginUtils.editPluginProperties(gt, true);
-        System.out.println(gt.buildCommand());
+        //gt.buildCommand(getConsole());
     }
 
-
-
-    @Override
-    public DefaultProperty[] getProperties() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+    
+    
+    
+    
     /* (non-Javadoc)
      * @see pt.lsts.neptus.gui.PropertiesProvider#setProperties(com.l2fprod.common.propertysheet.Property[])
      */
     @Override
     public void setProperties(Property[] properties) {
         // TODO Auto-generated method stub
-
+        
     }
 
     /* (non-Javadoc)
