@@ -37,15 +37,24 @@ import java.util.Arrays;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+
+import com.google.common.eventbus.Subscribe;
+
 import pt.lsts.imc.EntityParameter;
 import pt.lsts.imc.PlanControl;
+import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.PlanSpecification;
 import pt.lsts.imc.SetEntityParameters;
 import pt.lsts.neptus.comm.IMCSendMessageUtils;
 import pt.lsts.neptus.console.ConsoleLayout;
 import pt.lsts.neptus.console.ConsolePanel;
+import pt.lsts.neptus.console.events.ConsoleEventMissionChanged;
+import pt.lsts.neptus.console.events.ConsoleEventNewSystem;
+import pt.lsts.neptus.console.events.ConsoleEventPlanChange;
+import pt.lsts.neptus.console.plugins.PlanChangeListener;
 import pt.lsts.neptus.i18n.I18n;
 import pt.lsts.neptus.mp.ManeuverLocation;
+import pt.lsts.neptus.mp.MissionChangeEvent;
 import pt.lsts.neptus.mp.maneuvers.Goto;
 import pt.lsts.neptus.plugins.PluginDescription;
 import pt.lsts.neptus.plugins.Popup;
@@ -115,12 +124,12 @@ public class Drone2uConsole extends ConsolePanel{
         PlanControl pc = new PlanControl(); 
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
-        pc.setRequestId(IMCSendMessageUtils.getNextRequestId());       
+        pc.setRequestId(IMCSendMessageUtils.getNextRequestId());    // IMCSendMessageUtils.... é apenas para fins de sincronização   
         pc.setPlanId(neptusPlan.getId());
         System.out.println(neptusPlan.asIMCPlan().asXml(true));
        
         
-        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());
+        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());    // criação da mensagem IMC para ser mandada para p drone
         
         SetEntityParameters heightc = new SetEntityParameters();
         heightc.setName("Height Control");
@@ -140,6 +149,8 @@ public class Drone2uConsole extends ConsolePanel{
         }));        
         
         
+        // alteração da configuração do drone de modo a desligar a opção Ardupilot
+        // e ativação das opções Height control e PathControl
         try {
         pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] {
                 heightc,
@@ -152,7 +163,7 @@ public class Drone2uConsole extends ConsolePanel{
             e1.printStackTrace();
         }  
         
-        pc.setArg(pSpec);     
+        pc.setArg(pSpec);     // envio do plano para o drone
         
         return pc; 
     } 
@@ -186,6 +197,13 @@ public class Drone2uConsole extends ConsolePanel{
         JButton newPointButton = new JButton(newPointAction);        
         add(newPointButton);
 
+    }
+    
+    // esta função permite ver quando um sistema entra no neptus
+    // para se quisermos guardar novos sistemas que se conectam
+    @Subscribe
+    public void on(ConsoleEventNewSystem event) {
+            System.out.println(event.getSystem().getVehicleId());
     }
 
 }
