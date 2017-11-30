@@ -37,6 +37,7 @@ import com.l2fprod.common.propertysheet.Property;
 import pt.lsts.imc.PlanControl;
 import pt.lsts.imc.PlanSpecification;
 import pt.lsts.neptus.comm.IMCSendMessageUtils;
+import pt.lsts.neptus.console.ConsoleLayout;
 import pt.lsts.neptus.gui.PropertiesProvider;
 import pt.lsts.neptus.mp.ManeuverLocation;
 import pt.lsts.neptus.mp.Maneuver.SPEED_UNITS;
@@ -75,6 +76,10 @@ public class GetGotoPoint implements PropertiesProvider {
         return PluginUtils.getPluginProperties(this);
     }
     
+
+
+    
+    
     public PlanControl buildCommand(MissionType mt) {
         Property[] props = getProperties();
         Goto ponto1 = new Goto();
@@ -84,6 +89,9 @@ public class GetGotoPoint implements PropertiesProvider {
             if (p.getType() == LocationType.class) {
                 LocationType loc = (LocationType)p.getValue();
                 loc.convertToAbsoluteLatLonDepth();
+                
+                System.out.println(loc.getLongitudeStr());
+                System.out.println(loc.getLatitudeStr());
                 
                 maneuverLoc = new ManeuverLocation(loc);                
                 ponto1.setManeuverLocation(maneuverLoc);
@@ -135,7 +143,7 @@ public class GetGotoPoint implements PropertiesProvider {
     public static void main(String[] args) {
         GetGotoPoint gt = new GetGotoPoint();        
         PluginUtils.editPluginProperties(gt, true);
-        //gt.buildCommand(getConsole());
+        //gt.buildCommand(null);
     }
 
     
