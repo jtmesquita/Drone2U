@@ -250,15 +250,23 @@ public class Drone2uConsole extends ConsolePanel{
         Action newPointAction = new AbstractAction(I18n.text("New Goto point...")) {
             @Override
             public void actionPerformed(ActionEvent e) {                
-                LocationType[] destArray = new LocationType[2];
+                LocationType[] destArray = new LocationType[4];
                 
                 destArray[0] = new LocationType();
-                destArray[0].setLongitudeStr("6W42'31.15''");
-                destArray[0].setLatitudeStr("41N51'27.24''");
+                destArray[0].setLongitudeStr("6W42'34.78''");
+                destArray[0].setLatitudeStr("41N51'27.53''");
                 
                 destArray[1] = new LocationType();
-                destArray[1].setLongitudeStr("6W42'16.11''");
-                destArray[1].setLatitudeStr("41N51'25.26''");            
+                destArray[1].setLongitudeStr("6W42'34.28''");
+                destArray[1].setLatitudeStr("41N51'32.09''");
+                
+                destArray[2] = new LocationType();
+                destArray[2].setLongitudeStr("6W42'23.93''");
+                destArray[2].setLatitudeStr("41N51'31.21''");
+                
+                destArray[3] = new LocationType();
+                destArray[3].setLongitudeStr("6W42'25.65''");
+                destArray[3].setLatitudeStr("41N51'26.49''"); 
 
                 
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
