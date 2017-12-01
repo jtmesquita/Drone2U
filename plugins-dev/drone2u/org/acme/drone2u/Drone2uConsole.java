@@ -33,6 +33,7 @@
 package org.acme.drone2u;
 
 import java.awt.event.ActionEvent;
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Vector;
@@ -266,7 +267,10 @@ public class Drone2uConsole extends ConsolePanel{
                 
                 destArray[3] = new LocationType();
                 destArray[3].setLongitudeStr("6W42'25.65''");
-                destArray[3].setLatitudeStr("41N51'26.49''"); 
+                destArray[3].setLatitudeStr("41N51'26.49''");
+               
+                // chamada da função para conetar à base de dados 
+                Connection conn = new SQL_functions().connect();
 
                 
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),

@@ -254,5 +254,6 @@
 	<classpathentry kind="lib" path="lib/zxing-core-3.2.1.jar"/>
 	<classpathentry kind="lib" path="plugins-dev/shapefiles/lib/shapefilereader-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/opencv-2.4.11.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/PostgreSQL Library"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
