@@ -136,9 +136,6 @@ public class Drone2uConsole extends ConsolePanel{
                 
                 aux++;
             }
-            //neptusPlan.getGraph().addManeuverAtEnd(point);                
-            //neptusPlan.getGraph().addTransition(smid, maneuverLoc.getId(), true);
-            //System.out.println(neptusPlan.getGraph().getExitingTransitions(neptusPlan.getGraph().getManeuver(maneuverLoc.getId())));
 
             else {
 
@@ -160,6 +157,8 @@ public class Drone2uConsole extends ConsolePanel{
                 point.cloneActions(lastMan);
 
                 point.setId(getNewManeuverName(neptusPlan, "GOTO"));
+                
+                point.setManeuverLocation(maneuverLoc); 
 
                 neptusPlan.getGraph().addManeuver(point);
 
@@ -258,9 +257,9 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[0].setLatitudeStr("41N51'27.24''");
                 
                 destArray[1] = new LocationType();
-                destArray[1].setLongitudeStr("6W43'31.15''");
-                destArray[1].setLatitudeStr("41N51'27.24''");             
-                
+                destArray[1].setLongitudeStr("6W42'16.11''");
+                destArray[1].setLatitudeStr("41N51'25.26''");            
+
                 
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
                         destArray, 20, 200);
@@ -272,7 +271,7 @@ public class Drone2uConsole extends ConsolePanel{
         JButton newPointButton = new JButton(newPointAction);        
         add(newPointButton);
 
-    }
+    } 
     
     // esta função permite ver quando um sistema entra no neptus
     // para se quisermos guardar novos sistemas que se conectam
