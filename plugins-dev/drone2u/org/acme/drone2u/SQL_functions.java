@@ -87,7 +87,7 @@ public class SQL_functions {
     private ResultSet execute(String query) {
         try {
             stmt = con.createStatement();
-            rs = stmt.executeQuery(query);               
+            rs = stmt.executeQuery(query);            
         } catch (SQLException e) {
             System.err.println(e);
         }        
@@ -107,6 +107,35 @@ public class SQL_functions {
             System.err.println(e);
             return 0;
         }        
-    } 
+    }
+    
+    /**
+     * Coloca o schema respetivo ao Drone2U na BD 
+     */   
+    public void setSchema(){
+        String query = "SET search_path TO ola";
+        
+        execute(query);       
+    }
+    
+    public void getPoints() {
+        ResultSet rsaux;
+        
+        String query = "SELECT localizacao,latitude, longitude\n" + 
+                "FROM waypoint";
+        
+        rsaux = execute(query);
+        
+        try {
+            while(rsaux.next()){
+                System.out.println(rsaux.getString("localizacao") + " " + rsaux.getString("latitude") + " " + rsaux.getString("longitude"));
+            }
+            
+        }
+        catch (Exception e) {
+            System.err.println(e);
+        }
+        
+    }
 
 }

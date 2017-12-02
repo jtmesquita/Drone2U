@@ -270,14 +270,17 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[3].setLongitudeStr("6W42'25.65''");
                 destArray[3].setLatitudeStr("41N51'26.49''");
                
-                // chamada da função para conetar à base de dados
-                
+                // chamada da função para conetar à base de dados               
                 if(!database.isConnected()) {
                     Connection conn = database.connect();
+                    database.setSchema();
                 }
+                
+                // teste para ver se vai buscar direito à base de dados
+                database.getPoints();
                                 
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
-                        destArray, 20, 200);
+                        destArray, 20, 200);*/
                 
                 System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));               
             }
