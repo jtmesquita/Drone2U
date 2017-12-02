@@ -83,6 +83,7 @@ import pt.lsts.neptus.util.GuiUtils;
 public class Drone2uConsole extends ConsolePanel{
     
     private final String defaultCondition = "ManeuverIsDone";
+    SQL_functions database = new SQL_functions();
 
     /**
      * @param console
@@ -269,10 +270,12 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[3].setLongitudeStr("6W42'25.65''");
                 destArray[3].setLatitudeStr("41N51'26.49''");
                
-                // chamada da função para conetar à base de dados 
-                Connection conn = new SQL_functions().connect();
-
+                // chamada da função para conetar à base de dados
                 
+                if(!database.isConnected()) {
+                    Connection conn = database.connect();
+                }
+                                
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
                         destArray, 20, 200);
                 

@@ -51,11 +51,11 @@ public class SQL_functions {
     private final String user = "ee12299";
     private final String password = "drone";
 
+    Connection con;
     Statement stmt;
     ResultSet rs;
 
     public Connection connect() {
-        Connection con = null;
         try {
             con = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to the PostgreSQL server successfully.");
@@ -65,12 +65,26 @@ public class SQL_functions {
 
         return con;
     }
+    
+    /**
+     * Verifica se já foi estabelecida uma conexão a base de dados
+     * @return <code>true</code> caso já existe uma conexão estabelecida;
+     * <code>false</code> caso contrário
+     */    
+        public boolean isConnected(){
+            if(con == null) return false;
+            try{
+            return con.isValid(0);
+            } catch (SQLException e){
+                return false;
+            }
+        }  
 
     /**
      * Executa uma consulta diretamente na base de dados
      * @return <code>ResultSet</code> Retorna o resultado da consulta a base de dados. 
      */   
-    private ResultSet execute(String query, Connection con) {
+    private ResultSet execute(String query) {
         try {
             stmt = con.createStatement();
             rs = stmt.executeQuery(query);               
@@ -84,7 +98,7 @@ public class SQL_functions {
      * Executa uma consulta do tipo <code>INSERT</code>, <code>UPDATE</code> ou <code>DELETE</code>
      * @return <code>int</code> Retorna 1 em caso de sucesso; 0 caso contrário. 
      */    
-    private int update (String insert, Connection con) {        
+    private int update (String insert) {        
         try {
             stmt = con.createStatement();            
             return stmt.executeUpdate(insert);         
