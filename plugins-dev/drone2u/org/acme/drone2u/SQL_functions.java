@@ -50,7 +50,7 @@ import pt.lsts.neptus.types.coord.LocationType;
  */
 public class SQL_functions {
 
-    private final String url = "jdbc:postgresql://db.fe.up.pt/ee12299";
+    private final String url = "jdbc:postgresql://192.168.50.131/ee12299";
     private final String user = "ee12299";
     private final String password = "drone";
 
@@ -58,12 +58,15 @@ public class SQL_functions {
     Statement stmt;
     ResultSet rs;
 
-    public Connection connect() {
+    public Connection connect() {    
+        
         try {
             con = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to the PostgreSQL server successfully.");
         } catch (SQLException e) {
+            //System.out.println(con.toString());
             System.out.println(e.getMessage());
+            
         }
 
         return con;
