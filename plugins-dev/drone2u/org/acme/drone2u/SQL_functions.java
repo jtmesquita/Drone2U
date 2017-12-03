@@ -40,6 +40,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Vector;
+
+import pt.lsts.neptus.types.coord.LocationType;
 
 /**
  * @author pedro
@@ -65,20 +68,20 @@ public class SQL_functions {
 
         return con;
     }
-    
+
     /**
      * Verifica se já foi estabelecida uma conexão a base de dados
      * @return <code>true</code> caso já existe uma conexão estabelecida;
      * <code>false</code> caso contrário
      */    
-        public boolean isConnected(){
-            if(con == null) return false;
-            try{
+    public boolean isConnected(){
+        if(con == null) return false;
+        try{
             return con.isValid(0);
-            } catch (SQLException e){
-                return false;
-            }
-        }  
+        } catch (SQLException e){
+            return false;
+        }
+    }  
 
     /**
      * Executa uma consulta diretamente na base de dados
@@ -108,34 +111,107 @@ public class SQL_functions {
             return 0;
         }        
     }
-    
+
     /**
      * Coloca o schema respetivo ao Drone2U na BD 
      */   
     public void setSchema(){
         String query = "SET search_path TO ola";
-        
+
         execute(query);       
     }
-    
+
+    /**
+     * Apenas para testar ir buscar pontos (ainda sem nenhum propósito especifico) 
+     */
     public void getPoints() {
         ResultSet rsaux;
-        
+
         String query = "SELECT localizacao,latitude, longitude\n" + 
                 "FROM waypoint";
-        
+
         rsaux = execute(query);
-        
+
         try {
             while(rsaux.next()){
                 System.out.println(rsaux.getString("localizacao") + " " + rsaux.getString("latitude") + " " + rsaux.getString("longitude"));
             }
-            
+
         }
         catch (Exception e) {
             System.err.println(e);
         }
-        
+
     }
 
+
+    /**
+     * Vai buscar o ultimo id da lista de encomendas
+     */
+    public int getId_last_order() {
+        ResultSet rsaux;
+
+        String query = "SELECT id_e FROM encomenda ORDER BY id_e DESC";     // vai buscar o ultimo id das encomendas
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getInt("id_e");
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+
+    /**
+     * Função que retorna os ids das encomendas que são com um
+     * id superior ao last_id
+     */
+    public Vector<Integer> get_order_IDs (int last_id) {
+        ResultSet rsaux;
+        Vector<Integer> Ids = new Vector<>();
+
+        String query = "SELECT id_e FROM encomenda WHERE id_e >" +last_id + "ORDER BY id_e ASC";
+
+        rsaux = execute(query);
+        try {
+            while (rsaux.next())
+            {
+                Ids.add(rsaux.getInt("id_e"));
+            }
+            return Ids;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+
+    /**
+     * Função que retorna as coordenadas do ponto de entrega para uma encomenda
+     * na forma de LocationType
+     */
+    public LocationType getLocation_byId(int id) {
+        LocationType location = new LocationType();
+        ResultSet rsaux;
+
+        String query = "SELECT latitude, longitude FROM encomenda JOIN waypoint ON (morada_destino = localizacao) WHERE id_e = " + id;
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            location.setLatitudeStr(rsaux.getString("latitude"));
+            location.setLongitudeStr(rsaux.getString("longitude"));
+
+            return location;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
 }

@@ -34,6 +34,7 @@ package org.acme.drone2u;
 
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Vector;
@@ -43,6 +44,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
 
 import pt.lsts.imc.EntityParameter;
 import pt.lsts.imc.PlanControl;
@@ -65,6 +67,7 @@ import pt.lsts.neptus.mp.maneuvers.Goto;
 import pt.lsts.neptus.plugins.PluginDescription;
 import pt.lsts.neptus.plugins.Popup;
 import pt.lsts.neptus.plugins.Popup.POSITION;
+import pt.lsts.neptus.plugins.update.Periodic;
 import pt.lsts.neptus.types.coord.LocationType;
 import pt.lsts.neptus.types.mission.MissionType;
 import pt.lsts.neptus.types.mission.TransitionType;
@@ -81,9 +84,10 @@ import pt.lsts.neptus.util.GuiUtils;
 @Popup(pos = POSITION.CENTER, width = 200, height = 200, accelerator = 'Y')
 @SuppressWarnings("serial")
 public class Drone2uConsole extends ConsolePanel{
-    
+
     private final String defaultCondition = "ManeuverIsDone";
     SQL_functions database = new SQL_functions();
+    int last_order_id = 41;
 
     /**
      * @param console
@@ -91,17 +95,17 @@ public class Drone2uConsole extends ConsolePanel{
     public Drone2uConsole(ConsoleLayout console) {
         super(console);
     }
-
+    
 
     @Override
     public void cleanSubPanel() {
         // TODO Auto-generated method stub
     }
-    
+
     public boolean sendPlanToVehicle (String vehicleID, ConsoleLayout cl, PlanControl pspec) {              
         return cl.getImcMsgManager().sendMessageToVehicle(pspec, vehicleID, null);
     }
-    
+
     private String getNewManeuverName(PlanType plan, String manType) {
 
         int i = 1;
@@ -110,10 +114,7 @@ public class Drone2uConsole extends ConsolePanel{
 
         return manType + i;
     }    
-   
 
-    
-    
     public PlanControl buildPlan (String vehicleID, MissionType mt, LocationType [] destArray, double speed, double height) {   
 
         PlanType neptusPlan = new PlanType(mt);
@@ -135,7 +136,7 @@ public class Drone2uConsole extends ConsolePanel{
                 point.setSpeed(speed);     
 
                 neptusPlan.getGraph().addManeuver(point);
-                
+
                 aux++;
             }
 
@@ -159,7 +160,7 @@ public class Drone2uConsole extends ConsolePanel{
                 point.cloneActions(lastMan);
 
                 point.setId(getNewManeuverName(neptusPlan, "GOTO"));
-                
+
                 point.setManeuverLocation(maneuverLoc); 
 
                 neptusPlan.getGraph().addManeuver(point);
@@ -188,7 +189,7 @@ public class Drone2uConsole extends ConsolePanel{
 
                     addedTransitions.add(neptusPlan.getGraph().addTransition(lastMan.getId(), point.getId(), defaultCondition));
                 }
-                
+
                 neptusPlan.getGraph().addManeuver(point);
 
             }
@@ -253,36 +254,37 @@ public class Drone2uConsole extends ConsolePanel{
             @Override
             public void actionPerformed(ActionEvent e) {                
                 LocationType[] destArray = new LocationType[4];
-                
+
                 destArray[0] = new LocationType();
                 destArray[0].setLongitudeStr("6W42'34.78''");
                 destArray[0].setLatitudeStr("41N51'27.53''");
-                
+
                 destArray[1] = new LocationType();
                 destArray[1].setLongitudeStr("6W42'34.28''");
                 destArray[1].setLatitudeStr("41N51'32.09''");
-                
+
                 destArray[2] = new LocationType();
                 destArray[2].setLongitudeStr("6W42'23.93''");
                 destArray[2].setLatitudeStr("41N51'31.21''");
-                
+
                 destArray[3] = new LocationType();
                 destArray[3].setLongitudeStr("6W42'25.65''");
                 destArray[3].setLatitudeStr("41N51'26.49''");
-               
+
                 // chamada da função para conetar à base de dados               
                 if(!database.isConnected()) {
                     Connection conn = database.connect();
                     database.setSchema();
                 }
-                
+
                 // teste para ver se vai buscar direito à base de dados
-                database.getPoints();
-                                
-                PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
-                        destArray, 20, 200);*/
+                //database.getPoints();
+
+                //PlanControl pc = buildPlan("x8-02", getConsole().getMission(), destArray, 20, 200);
+
+                //System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
                 
-                System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));               
+                //check_new_points();
             }
         };
 
@@ -290,12 +292,65 @@ public class Drone2uConsole extends ConsolePanel{
         add(newPointButton);
 
     } 
-    
+
     // esta função permite ver quando um sistema entra no neptus
     // para se quisermos guardar novos sistemas que se conectam
     @Subscribe
     public void on(ConsoleEventNewSystem event) {
-            System.out.println(event.getSystem().getVehicleId());
+        System.out.println(event.getSystem().getVehicleId());
+    }
+
+    /**
+     * Função que verifica se alguma encomenda é colocada na
+     * base de dados 
+     */  
+    @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    public void check_new_points() {
+
+        // chamada da função para conetar à base de dados               
+        if(!database.isConnected()) {
+            Connection conn = database.connect();
+            database.setSchema();
+        }
+        
+        // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
+        int new_order_id = database.getId_last_order();
+        
+        if( new_order_id> last_order_id) {
+            System.out.println("Nova encomenda na bd. ID= "+database.getId_last_order());
+            
+            //last_order_id = database.getId_last_order();
+            
+            Vector<Integer> list_ids;
+            
+            list_ids = database.get_order_IDs(last_order_id);
+            
+            // Simula o armazém de origem porque na base de dados ainda nao tem as coordenadas
+            LocationType warehouse = new LocationType();
+            warehouse.setLongitudeStr("6W42'34.78''");
+            warehouse.setLatitudeStr("41N51'27.53''");
+            
+            for(Integer id : list_ids) {
+                System.out.println(id);
+                
+                //vou ter de ler o local de recolha e o local de entrega
+                LocationType final_location;
+                
+                final_location = database.getLocation_byId(id);
+                
+                LocationType[] destArray = new LocationType[2];
+                
+                destArray[0] = warehouse;
+                destArray[1] = final_location;
+                
+                PlanControl pc = buildPlan("x8-02", getConsole().getMission(),destArray, 20, 200);
+                
+                System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
+            }
+            
+            last_order_id = new_order_id;
+            
+        }
     }
 
 }
