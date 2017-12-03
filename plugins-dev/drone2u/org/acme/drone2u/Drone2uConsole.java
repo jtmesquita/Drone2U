@@ -32,7 +32,9 @@
  */
 package org.acme.drone2u;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,7 +42,17 @@ import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -78,12 +90,13 @@ import pt.lsts.neptus.util.GuiUtils;
 
 
 @PluginDescription(name = "Drone2U")
-@Popup(pos = POSITION.CENTER, width = 200, height = 200, accelerator = 'Y')
+@Popup(pos = POSITION.CENTER, width = 585, height = 360, accelerator = 'Y')
 @SuppressWarnings("serial")
 public class Drone2uConsole extends ConsolePanel{
     
     private final String defaultCondition = "ManeuverIsDone";
     SQL_functions database = new SQL_functions();
+    private JTable table;
 
     /**
      * @param console
@@ -247,11 +260,15 @@ public class Drone2uConsole extends ConsolePanel{
 
     @Override
     public void initSubPanel() {
-        removeAll();        
-
-        Action newPointAction = new AbstractAction(I18n.text("New Goto point...")) {
-            @Override
-            public void actionPerformed(ActionEvent e) {                
+        removeAll();       
+        
+        
+        JScrollPane scrollPane = new JScrollPane();
+        
+        JButton testButton = new JButton("Test button");
+        testButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                
                 LocationType[] destArray = new LocationType[4];
                 
                 destArray[0] = new LocationType();
@@ -280,16 +297,47 @@ public class Drone2uConsole extends ConsolePanel{
                 database.getPoints();
                                 
                 PlanControl pc = buildPlan("x8-02", getConsole().getMission(),
-                        destArray, 20, 200);*/
+                        destArray, 20, 200);
                 
-                System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));               
+                System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));     
+                
+                
             }
-        };
+        });
+        GroupLayout groupLayout = new GroupLayout(this);
+        groupLayout.setHorizontalGroup(
+            groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+                    .addContainerGap(56, Short.MAX_VALUE)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+                        .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(scrollPane, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
+                    .addGap(52))
+        );
+        groupLayout.setVerticalGroup(
+            groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(groupLayout.createSequentialGroup()
+                    .addGap(27)
+                    .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 227, GroupLayout.PREFERRED_SIZE)
+                    .addGap(18)
+                    .addComponent(testButton)
+                    .addContainerGap(59, Short.MAX_VALUE))
+        );
+        
+        table = new JTable();
+        table.setModel(new DefaultTableModel(
+            new Object[][] {
+                {null, null, null},
+                {null, null, null},
+            },
+            new String[] {
+                    "ID Drone", "Localização atual", "Velocidade"
+            }
+        ));
+        scrollPane.setViewportView(table);
+        setLayout(groupLayout);      
 
-        JButton newPointButton = new JButton(newPointAction);        
-        add(newPointButton);
-
-    } 
+    }
     
     // esta função permite ver quando um sistema entra no neptus
     // para se quisermos guardar novos sistemas que se conectam
