@@ -32,42 +32,27 @@
  */
 package org.acme.drone2u;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Vector;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
 
+import pt.lsts.imc.DesiredPath;
 import pt.lsts.imc.EntityParameter;
 import pt.lsts.imc.PlanControl;
-import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.PlanSpecification;
 import pt.lsts.imc.SetEntityParameters;
 import pt.lsts.neptus.NeptusLog;
@@ -76,14 +61,8 @@ import pt.lsts.neptus.comm.manager.imc.ImcSystem;
 import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
 import pt.lsts.neptus.console.ConsoleLayout;
 import pt.lsts.neptus.console.ConsolePanel;
-import pt.lsts.neptus.console.events.ConsoleEventMissionChanged;
-import pt.lsts.neptus.console.events.ConsoleEventNewSystem;
-import pt.lsts.neptus.console.events.ConsoleEventPlanChange;
-import pt.lsts.neptus.console.plugins.PlanChangeListener;
-import pt.lsts.neptus.i18n.I18n;
 import pt.lsts.neptus.mp.Maneuver;
 import pt.lsts.neptus.mp.ManeuverLocation;
-import pt.lsts.neptus.mp.MissionChangeEvent;
 import pt.lsts.neptus.mp.maneuvers.Goto;
 import pt.lsts.neptus.plugins.PluginDescription;
 import pt.lsts.neptus.plugins.Popup;
@@ -93,15 +72,12 @@ import pt.lsts.neptus.types.coord.LocationType;
 import pt.lsts.neptus.types.mission.MissionType;
 import pt.lsts.neptus.types.mission.TransitionType;
 import pt.lsts.neptus.types.mission.plan.PlanType;
-import pt.lsts.neptus.util.GuiUtils;
 import pt.lsts.neptus.util.ImageUtils;
 
 /**
  * @author joao
- *
+ * 
  */
-
-
 @PluginDescription(name = "Drone2U")
 @Popup(pos = POSITION.CENTER, width = 442, height = 291, accelerator = 'Y')
 @SuppressWarnings("serial")
@@ -113,7 +89,6 @@ public class Drone2uConsole extends ConsolePanel{
     
     private UavsState stateUavsPanel = new UavsState();;
     private JFrame stateUavsFrame;
-    private int counter = 0;
     int last_order_id = 41;
 
 
@@ -282,48 +257,40 @@ public class Drone2uConsole extends ConsolePanel{
         
         setBackground(Color.GRAY);
         
-        JLabel lblNewLabel = new JLabel("");
-        lblNewLabel.setBackground(Color.GRAY);
-            
-        ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 157, 117);
-        
-        lblNewLabel.setIcon(drone2u);
-        lblNewLabel.setOpaque(true);
-        
-        
-        
-        lblNewLabel.setIcon(drone2u);
-        lblNewLabel.setOpaque(true);
+        JLabel drone2uLogo = new JLabel("");
+        drone2uLogo.setBackground(Color.GRAY);            
+        ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 157, 117);        
+        drone2uLogo.setIcon(drone2u);         
+        drone2uLogo.setOpaque(true);
         
         JButton testButton = new JButton("Envio rota (teste)");
         testButton.setForeground(Color.WHITE);
         testButton.setFont(new Font("DejaVu Sans", Font.PLAIN, 20));
         testButton.setBackground(Color.BLACK);
         
-        JButton btnEstadoUavs = new JButton("Estado UAVs...");
-        btnEstadoUavs.setForeground(Color.WHITE);
-        btnEstadoUavs.setBackground(Color.BLACK);
-        btnEstadoUavs.setFont(new Font("DejaVu Sans", Font.PLAIN, 20));
+        JButton estadoUavsButton = new JButton("Estado UAVs...");
+        estadoUavsButton.setForeground(Color.WHITE);
+        estadoUavsButton.setBackground(Color.BLACK);
+        estadoUavsButton.setFont(new Font("DejaVu Sans", Font.PLAIN, 20));
         
-        JLabel lblNewLabel_1 = new JLabel("Neptus plugin");
-        lblNewLabel_1.setForeground(Color.WHITE);
-        
-        lblNewLabel_1.setFont(new Font("DejaVu Sans", Font.PLAIN, 25));
+        JLabel titlePlugin = new JLabel("Neptus plugin");
+        titlePlugin.setForeground(Color.WHITE);        
+        titlePlugin.setFont(new Font("DejaVu Sans", Font.PLAIN, 25));
         
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addGap(35)
-                    .addComponent(lblNewLabel)
+                    .addComponent(drone2uLogo)
                     .addGap(18)
-                    .addComponent(lblNewLabel_1)
+                    .addComponent(titlePlugin)
                     .addGap(87))
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
                         .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnEstadoUavs, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
+                        .addComponent(estadoUavsButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
                     .addContainerGap(41, Short.MAX_VALUE))
         );
         groupLayout.setVerticalGroup(
@@ -332,12 +299,12 @@ public class Drone2uConsole extends ConsolePanel{
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGap(29)
-                            .addComponent(lblNewLabel))
+                            .addComponent(drone2uLogo))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGap(69)
-                            .addComponent(lblNewLabel_1)))
+                            .addComponent(titlePlugin)))
                     .addGap(37)
-                    .addComponent(btnEstadoUavs, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(estadoUavsButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(testButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(16, Short.MAX_VALUE))
@@ -385,65 +352,55 @@ public class Drone2uConsole extends ConsolePanel{
                 }
         });
         
-        //se o botão estadouavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs 
-        btnEstadoUavs.addActionListener(new ActionListener() {
+        //se o botão estado uavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs 
+        estadoUavsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {                
                 stateUavsFrame = new JFrame();                       
-                stateUavsFrame.add(stateUavsPanel);
+                stateUavsFrame.add(stateUavsPanel); //adiciona JPanel que contem a tabela ao JFrame criado
                 stateUavsFrame.setSize(850, 505);
                 stateUavsFrame.setVisible(true);             
             }
         });
-        
-        
-
     }
-
-    // esta função permite ver quando um sistema entra no neptus
-    // para se quisermos guardar novos sistemas que se conectam
-    @Subscribe
-    public void on(ConsoleEventNewSystem event) {
-        //System.out.println();
-        //table.setValueAt(event.getSystem().getVehicleId(), 0, 0);
-    }
-
+    
+    /*@Subscribe
+    public void on(DesiredPath msg) {
+        if (msg.getSourceName().equals(getConsole().getMainSystem())) {
+            tSpeed = msg.getAsNumber("speed").doubleValue();
+            speedLabelUpdate();
+        }
+    }*/
+    
     @Periodic(millisBetweenUpdates=500) // a cada 500 milisegundos atualiza a tabela de info dos UAVs 
     public void refresh_table () {        
-        
-        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
-        int flag = 0;
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();        
         
         DefaultTableModel tabela = (DefaultTableModel) stateUavsPanel.getTable().getModel();
-        Object rowData[] = new Object[5];
+        Object rowData[] = new Object[4];
         
-        for(int i = 0; i < tabela.getRowCount(); i++) {
-            tabela.removeRow(i);            
-        }         
+        //apaga todos os valores da tabela 
+        int tam = tabela.getRowCount();
+        for(int i = 0; i < tam; i++) {
+            tabela.removeRow(tabela.getRowCount()-1);            
+            tabela.fireTableDataChanged();            
+        }
         
-        
-        for(int i = 0; i < vehicles_list.length; i++) {            
+        //adiciona os valores atualizados a tabela
+        for(int i = 0; i < vehicles_list.length; i++) {      
+            rowData[0] = vehicles_list[i].getName();
+            rowData[1] = vehicles_list[i].getLocation().getLatitudeAsPrettyString()+" "+vehicles_list[i].getLocation().getLongitudeAsPrettyString();
+            rowData[2] = vehicles_list[i].getLocation().getHeight() + " m"; 
             
-            for(int j = 0; j < tabela.getRowCount(); j++) {
-                if(tabela.getValueAt(j, 0).equals(vehicles_list[i].getName())) {
-                    tabela.setValueAt(rowData[1], j, 1);
-                    flag = 1;
-                    break;
-                }                 
-            }
+            if(vehicles_list[i].getActivePlan() != null)
+                rowData[3] = vehicles_list[i].getActivePlan().toString();
+            else
+                rowData[3] = " - ";
             
-            if(flag == 0) {
-                rowData[0] = vehicles_list[i].getName();
-                rowData[1] = vehicles_list[i].getLocation().getLatitudeAsPrettyString()+" "+vehicles_list[i].getLocation().getLongitudeAsPrettyString();
-                rowData[2] = "";
-                rowData[3] = "";          
-                rowData[4] = "";
-                
-                tabela.insertRow(i, rowData);              
-            }                   
-        }        
-    }
-    
-    
+            tabela.insertRow(i, rowData);
+            tabela.fireTableDataChanged();
+        }                   
+    }       
+            
     /**
      * Função que verifica se alguma encomenda é colocada na
      * base de dados
