@@ -38,6 +38,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Vector;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
@@ -85,11 +86,12 @@ public class Drone2uConsole extends ConsolePanel{
 
     private final String defaultCondition = "ManeuverIsDone";
     SQL_functions database = new SQL_functions();
+    Weather data = new Weather();
 
     
     private UavsState stateUavsPanel = new UavsState();;
     private JFrame stateUavsFrame;
-    int last_order_id = 41;
+    int last_order_id = 50;
 
 
     /**
@@ -452,6 +454,19 @@ public class Drone2uConsole extends ConsolePanel{
             last_order_id = new_order_id;
 
         }
+    }
+    
+    @Periodic(millisBetweenUpdates=1000*30) // a cada 30segundos é chamada a função
+    public void check_weather() {
+        
+        Vector<Map<String, Object>> content = new Vector<>();
+        
+        content = data.getWeatherData();
+        
+        System.out.println("Matosinhos:");
+        System.out.println("    Temperatura: "+ content.get(0).get("temp"));
+        System.out.println("    Humidade: "+ content.get(0).get("humidity"));
+        System.out.println("    Velo. Vento: "+content.get(1).get("speed"));
     }
 
 }
