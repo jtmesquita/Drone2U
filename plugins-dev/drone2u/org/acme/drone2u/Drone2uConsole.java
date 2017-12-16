@@ -37,6 +37,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
@@ -49,6 +50,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.table.DefaultTableModel;
 
+import com.amazonaws.services.s3.model.RequestPaymentConfiguration.Payer;
 import com.google.common.eventbus.Subscribe;
 
 import pt.lsts.imc.DesiredPath;
@@ -76,7 +78,7 @@ import pt.lsts.neptus.types.mission.plan.PlanType;
 import pt.lsts.neptus.util.ImageUtils;
 
 /**
- * @author joao
+ * @author joao mesquita e pedro guedes
  * 
  */
 @PluginDescription(name = "Drone2U")
@@ -88,10 +90,10 @@ public class Drone2uConsole extends ConsolePanel{
     SQL_functions database = new SQL_functions();
     Weather data = new Weather();
 
-    
+
     private UavsState stateUavsPanel = new UavsState();;
     private JFrame stateUavsFrame;
-    int last_order_id = 50;
+    int last_order_id = 100;
 
 
     /**
@@ -256,66 +258,66 @@ public class Drone2uConsole extends ConsolePanel{
     @Override
     public void initSubPanel() {
         removeAll();
-        
+
         setBackground(Color.GRAY);
-        
+
         JLabel drone2uLogo = new JLabel("");
         drone2uLogo.setBackground(Color.GRAY);            
         ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 157, 117);        
         drone2uLogo.setIcon(drone2u);         
         drone2uLogo.setOpaque(true);
-        
+
         JButton testButton = new JButton("Envio rota (teste)");
         testButton.setForeground(Color.WHITE);
         testButton.setFont(new Font("DejaVu Sans", Font.PLAIN, 20));
         testButton.setBackground(Color.BLACK);
-        
+
         JButton estadoUavsButton = new JButton("Estado UAVs...");
         estadoUavsButton.setForeground(Color.WHITE);
         estadoUavsButton.setBackground(Color.BLACK);
         estadoUavsButton.setFont(new Font("DejaVu Sans", Font.PLAIN, 20));
-        
+
         JLabel titlePlugin = new JLabel("Neptus plugin");
         titlePlugin.setForeground(Color.WHITE);        
         titlePlugin.setFont(new Font("DejaVu Sans", Font.PLAIN, 25));
-        
+
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
+                groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addGap(35)
-                    .addComponent(drone2uLogo)
-                    .addGap(18)
-                    .addComponent(titlePlugin)
-                    .addGap(87))
+                        .addGap(35)
+                        .addComponent(drone2uLogo)
+                        .addGap(18)
+                        .addComponent(titlePlugin)
+                        .addGap(87))
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-                        .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(estadoUavsButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
-                    .addContainerGap(41, Short.MAX_VALUE))
-        );
+                        .addContainerGap()
+                        .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+                                .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(estadoUavsButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
+                        .addContainerGap(41, Short.MAX_VALUE))
+                );
         groupLayout.setVerticalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
+                groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addGap(29)
-                            .addComponent(drone2uLogo))
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addGap(69)
-                            .addComponent(titlePlugin)))
-                    .addGap(37)
-                    .addComponent(estadoUavsButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(testButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(16, Short.MAX_VALUE))
-        );
+                        .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                                .addGroup(groupLayout.createSequentialGroup()
+                                        .addGap(29)
+                                        .addComponent(drone2uLogo))
+                                .addGroup(groupLayout.createSequentialGroup()
+                                        .addGap(69)
+                                        .addComponent(titlePlugin)))
+                        .addGap(37)
+                        .addComponent(estadoUavsButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(16, Short.MAX_VALUE))
+                );
         setLayout(groupLayout);
 
-    
 
-        
+
+
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -351,9 +353,9 @@ public class Drone2uConsole extends ConsolePanel{
                 //System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
 
                 //check_new_points();
-                }
+            }
         });
-        
+
         //se o botão estado uavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs 
         estadoUavsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {                
@@ -364,7 +366,7 @@ public class Drone2uConsole extends ConsolePanel{
             }
         });
     }
-    
+
     /*@Subscribe
     public void on(DesiredPath msg) {
         if (msg.getSourceName().equals(getConsole().getMainSystem())) {
@@ -372,37 +374,37 @@ public class Drone2uConsole extends ConsolePanel{
             speedLabelUpdate();
         }
     }*/
-    
+
     @Periodic(millisBetweenUpdates=500) // a cada 500 milisegundos atualiza a tabela de info dos UAVs 
     public void refresh_table () {        
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();        
-        
+
         DefaultTableModel tabela = (DefaultTableModel) stateUavsPanel.getTable().getModel();
         Object rowData[] = new Object[4];
-        
+
         //apaga todos os valores da tabela 
         int tam = tabela.getRowCount();
         for(int i = 0; i < tam; i++) {
             tabela.removeRow(tabela.getRowCount()-1);            
             tabela.fireTableDataChanged();            
         }
-        
+
         //adiciona os valores atualizados a tabela
         for(int i = 0; i < vehicles_list.length; i++) {      
             rowData[0] = vehicles_list[i].getName();
             rowData[1] = vehicles_list[i].getLocation().getLatitudeAsPrettyString()+" "+vehicles_list[i].getLocation().getLongitudeAsPrettyString();
             rowData[2] = vehicles_list[i].getLocation().getHeight() + " m"; 
-            
+
             if(vehicles_list[i].getActivePlan() != null)
                 rowData[3] = vehicles_list[i].getActivePlan().toString();
             else
                 rowData[3] = " - ";
-            
+
             tabela.insertRow(i, rowData);
             tabela.fireTableDataChanged();
         }                   
     }       
-            
+
     /**
      * Função que verifica se alguma encomenda é colocada na
      * base de dados
@@ -411,7 +413,7 @@ public class Drone2uConsole extends ConsolePanel{
     public void check_new_points() {
 
         // chamada da função para conetar à base de dados
-       if(!database.isConnected()) {
+        if(!database.isConnected()) {
             Connection conn = database.connect();
             database.setSchema();
         }
@@ -455,18 +457,70 @@ public class Drone2uConsole extends ConsolePanel{
 
         }
     }
-    
+
+    /**
+     * Função que verifica as condições meteorológicas
+     */
     @Periodic(millisBetweenUpdates=1000*30) // a cada 30segundos é chamada a função
     public void check_weather() {
-        
+
         Vector<Map<String, Object>> content = new Vector<>();
-        
+
         content = data.getWeatherData();
         
+        String[] weather_description = content.get(2).get("weather").toString().split(",");
+        weather_description = weather_description[2].split("=");
+        
+        double temperature = Double.parseDouble(content.get(0).get("temp").toString());
+        double wind_velocity = Double.parseDouble(content.get(1).get("speed").toString())*3.6;
+        
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);        
+        
+
         System.out.println("Matosinhos:");
-        System.out.println("    Temperatura: "+ content.get(0).get("temp"));
+        System.out.println("    Temperatura: "+  temperature+" graus");
         System.out.println("    Humidade: "+ content.get(0).get("humidity"));
-        System.out.println("    Velo. Vento: "+content.get(1).get("speed"));
+        System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
+        System.out.println("    Descrição: "+weather_description[1]);
+        
+        getPath(18);
     }
 
+   /**
+    * 
+    * @param order_id
+    * @return path
+    */
+    //public Vector<LocationType> getPath(int order_id) {
+    public void  getPath(int order_id) {
+        Vector<LocationType> path = new Vector<>();
+        LocationType location_aux = new LocationType();
+        
+
+        String[] latitudes;
+        String[] longitudes;
+        String[] path_fromBD = new String[2];
+        int size;
+        
+        path_fromBD = database.getPathForOrder(order_id);
+        
+        latitudes = path_fromBD[0].split(";");
+        longitudes = path_fromBD[1].split(";");
+        
+        size = latitudes.length;
+        
+        for(int i=0; i<size; i++) {
+            location_aux.setLatitudeDegs(Double.parseDouble(latitudes[i]));;
+            location_aux.setLongitudeDegs(Double.parseDouble(longitudes[i]));;
+            
+            path.add(location_aux);
+        }
+
+        
+        //System.out.println(path);
+        
+        
+        //return path;
+    }
 }

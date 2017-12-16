@@ -88,9 +88,12 @@ public class Weather {
             Map<String, Object> respMap = jsonToMap(result.toString());                 // primeiro converto para o formato e só depois é que posso aceder ao seu conteúdo
             Map<String, Object> mainMap = jsonToMap(respMap.get("main").toString());    // no main contém: temperatura, pressão, humidad
             Map<String, Object> windMap = jsonToMap(respMap.get("wind").toString());    // no wind: velocidade e ângulo;
+            //Map<String, Object> tudo = jsonToMap(respMap.toString());
 
+            
             data.addElement(mainMap);
             data.addElement(windMap);
+            data.addElement(respMap);
         }
         catch (IOException e) {
             System.out.println(e.getMessage());
