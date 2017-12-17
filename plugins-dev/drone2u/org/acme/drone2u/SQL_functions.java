@@ -254,5 +254,28 @@ public class SQL_functions {
             return null;
         }
     }
+    
+    /**
+     * Atualiza o estado de uma encomenda (order_id) com o estado
+     * "state"
+     * @param order_id
+     * @param State
+     * @return
+     */
+    public int OrderStateUpdate(int order_id, String State) {
+        
+        String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_d = "+order_id;
+        
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+            return 1;
+
+        } catch (SQLException e) {
+            System.err.println(e);
+            return 0;
+        }    
+        
+    }
 
 }

@@ -129,7 +129,7 @@ public class Drone2uConsole extends ConsolePanel{
 
         int aux = 0;
 
-        for(LocationType dest : destArray) {      //para futura implementação de multiplos pontos (para já destArray tem apenas uma posiçao)
+        for(LocationType dest : destArray) {      
 
             if (aux == 0) {             //se for a primeira manobra adiciona a primeira manobra
                 dest.convertToAbsoluteLatLonDepth();
@@ -344,6 +344,10 @@ public class Drone2uConsole extends ConsolePanel{
                     Connection conn = database.connect();
                     database.setSchema();
                 }
+                
+                //CHAMADA DA FUNÇAO PARA TESTE
+                
+                TesteRota();
 
                 // teste para ver se vai buscar direito à base de dados
                 //database.getPoints();
@@ -461,7 +465,7 @@ public class Drone2uConsole extends ConsolePanel{
     /**
      * Função que verifica as condições meteorológicas
      */
-    @Periodic(millisBetweenUpdates=1000*30) // a cada 30segundos é chamada a função
+    @Periodic(millisBetweenUpdates=1000*60) // a cada 60segundos é chamada a função
     public void check_weather() {
 
         Vector<Map<String, Object>> content = new Vector<>();
@@ -483,8 +487,6 @@ public class Drone2uConsole extends ConsolePanel{
         System.out.println("    Humidade: "+ content.get(0).get("humidity"));
         System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
         System.out.println("    Descrição: "+weather_description[1]);
-        
-        getPath(18);
     }
 
    /**
@@ -493,10 +495,7 @@ public class Drone2uConsole extends ConsolePanel{
     * @return path
     */
     //public Vector<LocationType> getPath(int order_id) {
-    public void  getPath(int order_id) {
-        Vector<LocationType> path = new Vector<>();
-        LocationType location_aux = new LocationType();
-        
+    public LocationType[]  getPath(int order_id) {
 
         String[] latitudes;
         String[] longitudes;
@@ -505,22 +504,53 @@ public class Drone2uConsole extends ConsolePanel{
         
         path_fromBD = database.getPathForOrder(order_id);
         
-        latitudes = path_fromBD[0].split(";");
-        longitudes = path_fromBD[1].split(";");
+        latitudes = path_fromBD[1].split(";");
+        longitudes = path_fromBD[0].split(";");
         
         size = latitudes.length;
         
         for(int i=0; i<size; i++) {
-            location_aux.setLatitudeDegs(Double.parseDouble(latitudes[i]));;
-            location_aux.setLongitudeDegs(Double.parseDouble(longitudes[i]));;
+            System.out.println("latidute"+i+": "+latitudes[i]);
+            System.out.println("longitude"+i+": "+longitudes[i]);
+        }
+        
+        
+        LocationType[] path = new LocationType[size];
+        
+        for(int i=0; i<size; i++) {
+            path[i] = new LocationType();
             
-            path.add(location_aux);
+            path[i].setLatitudeStr(latitudes[i]);;
+            path[i].setLongitudeStr(longitudes[i]);
         }
 
         
-        //System.out.println(path);
+        for(int i=0; i<size; i++) {
+            System.out.println(path[i]);
+        }
         
         
-        //return path;
+        // path contém a trajetória a fazer pelo drone 
+        return path;
     }
+
+    /**
+     * Função de teste
+     */
+    public void TesteRota() {
+        
+        LocationType[] path;
+        
+        path = getPath(19);
+
+        PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 200);
+
+        System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
+        
+        sendPlanToVehicle("x8-02", getConsole(), pc);
+        
+        database.OrderStateUpdate(19, "enviada");
+
+    }
+
 }
