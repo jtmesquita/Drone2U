@@ -89,8 +89,10 @@ public class Drone2uConsole extends ConsolePanel{
     Weather data = new Weather();
 
     
-    private UavsState stateUavsPanel = new UavsState();;
-    private JFrame stateUavsFrame;
+    //private UavsState stateUavsPanel = new UavsState();
+    private PainelInfo painelInfoPanel = new PainelInfo();
+    //private JFrame stateUavsFrame;
+    private JFrame painelInfoFrame;
     int last_order_id = 50;
 
 
@@ -357,10 +359,17 @@ public class Drone2uConsole extends ConsolePanel{
         //se o botão estado uavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs 
         estadoUavsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {                
-                stateUavsFrame = new JFrame();                       
+                /*stateUavsFrame = new JFrame();                       
                 stateUavsFrame.add(stateUavsPanel); //adiciona JPanel que contem a tabela ao JFrame criado
                 stateUavsFrame.setSize(850, 505);
-                stateUavsFrame.setVisible(true);             
+                stateUavsFrame.setVisible(true);*/
+                painelInfoFrame = new JFrame();
+                painelInfoFrame.add(painelInfoPanel);
+                painelInfoFrame.setSize(1065, 660);
+                painelInfoFrame.setVisible(true);
+                painelInfoFrame.setResizable(false);
+               
+                
             }
         });
     }
@@ -373,36 +382,12 @@ public class Drone2uConsole extends ConsolePanel{
         }
     }*/
     
-    @Periodic(millisBetweenUpdates=500) // a cada 500 milisegundos atualiza a tabela de info dos UAVs 
-    public void refresh_table () {        
-        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();        
-        
-        DefaultTableModel tabela = (DefaultTableModel) stateUavsPanel.getTable().getModel();
-        Object rowData[] = new Object[4];
-        
-        //apaga todos os valores da tabela 
-        int tam = tabela.getRowCount();
-        for(int i = 0; i < tam; i++) {
-            tabela.removeRow(tabela.getRowCount()-1);            
-            tabela.fireTableDataChanged();            
-        }
-        
-        //adiciona os valores atualizados a tabela
-        for(int i = 0; i < vehicles_list.length; i++) {      
-            rowData[0] = vehicles_list[i].getName();
-            rowData[1] = vehicles_list[i].getLocation().getLatitudeAsPrettyString()+" "+vehicles_list[i].getLocation().getLongitudeAsPrettyString();
-            rowData[2] = vehicles_list[i].getLocation().getHeight() + " m"; 
-            
-            if(vehicles_list[i].getActivePlan() != null)
-                rowData[3] = vehicles_list[i].getActivePlan().toString();
-            else
-                rowData[3] = " - ";
-            
-            tabela.insertRow(i, rowData);
-            tabela.fireTableDataChanged();
-        }                   
-    }       
-            
+
+    @Periodic(millisBetweenUpdates=500) // a cada 30segundos é chamada a função
+    public void update_gui() {        
+        painelInfoPanel.refresh_table();        
+    }     
+    
     /**
      * Função que verifica se alguma encomenda é colocada na
      * base de dados
@@ -463,10 +448,14 @@ public class Drone2uConsole extends ConsolePanel{
         
         content = data.getWeatherData();
         
-        System.out.println("Matosinhos:");
+        /*System.out.println("Matosinhos:");
         System.out.println("    Temperatura: "+ content.get(0).get("temp"));
         System.out.println("    Humidade: "+ content.get(0).get("humidity"));
-        System.out.println("    Velo. Vento: "+content.get(1).get("speed"));
+        System.out.println("    Velo. Vento: "+content.get(1).get("speed"));*/
+        
+        painelInfoPanel.getVentoText().setText(String.valueOf(content.get(1).get("speed")));
+        painelInfoPanel.getHumidadeText().setText(String.valueOf(content.get(0).get("humidity"))+" %");
+        painelInfoPanel.getTempText().setText(String.valueOf(content.get(0).get("temp"))+ " C");
     }
 
 }

@@ -41,6 +41,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import pt.lsts.neptus.comm.manager.imc.ImcSystem;
+import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
+import pt.lsts.neptus.plugins.update.Periodic;
 import pt.lsts.neptus.util.ImageUtils;
 
 import java.awt.event.ActionListener;
@@ -82,6 +85,8 @@ public class PainelInfo extends JPanel {
     private JTextField tempText;
     private JTextField humidadeText;
     private JTextField ventoText;
+    private JProgressBar progressBarOcupacao;
+    private JComboBox<String> comboBoxFiltroUav;
 
     /**
      * Create the panel.
@@ -113,7 +118,7 @@ public class PainelInfo extends JPanel {
         label.setForeground(Color.WHITE);
         label.setFont(new Font("Monospaced", Font.PLAIN, 20));
         
-        JProgressBar progressBarOcupacao = new JProgressBar();
+        progressBarOcupacao = new JProgressBar();
         progressBarOcupacao.setValue(90);
         progressBarOcupacao.setToolTipText("");
         progressBarOcupacao.setStringPainted(true);
@@ -389,34 +394,32 @@ public class PainelInfo extends JPanel {
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
+                        .addComponent(lblCondiesMet, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                            .addComponent(lblCondiesMet, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .addContainerGap())
-                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                            .addGap(12)
                             .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                                     .addComponent(lblTemperatura, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
                                     .addGap(24)
-                                    .addComponent(tempText, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(tempText, GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
                                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                                     .addComponent(lblHumidade)
                                     .addPreferredGap(ComponentPlacement.RELATED)
-                                    .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)))
-                            .addPreferredGap(ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                                    .addComponent(humidadeText, GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)))
+                            .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(lblVento, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
                             .addGap(3)
-                            .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
-                            .addGap(24))))
+                            .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE)
+                            .addGap(9)))
+                    .addContainerGap())
         );
         gl_panelCondMeteo.setVerticalGroup(
             gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblCondiesMet, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                    .addGap(9)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                            .addGap(9)
                             .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(lblTemperatura, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(tempText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -425,7 +428,7 @@ public class PainelInfo extends JPanel {
                                 .addComponent(lblHumidade, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                            .addGap(18)
+                            .addGap(9)
                             .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(lblVento, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))))
@@ -476,9 +479,14 @@ public class PainelInfo extends JPanel {
         
         JScrollPane scrollPaneEncomendas = new JScrollPane();
         
-        JComboBox comboBoxFiltroUav = new JComboBox();
+        
+        //String [] uavsNames = {"x"}
+        comboBoxFiltroUav = new JComboBox<>();
         comboBoxFiltroUav.setForeground(Color.BLACK);
         comboBoxFiltroUav.setBackground(Color.WHITE);
+        
+       
+       
         
         JLabel lblEncomendas = new JLabel("Encomendas");
         lblEncomendas.setHorizontalAlignment(SwingConstants.LEFT);
@@ -537,7 +545,115 @@ public class PainelInfo extends JPanel {
         scrollPaneEncomendas.setViewportView(tableEncomendas);
         panelEncomendas.setLayout(gl_panelEncomendas);
         setLayout(groupLayout);
-        
-
     }
+    
+    //@Periodic(millisBetweenUpdates=500) // a cada 500 milisegundos atualiza a tabela de info dos UAVs 
+    public void refresh_table () {        
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
+        float inactive_vehicles = 0;
+        float active_vehicles = 0;    
+        
+        System.out.println("oioioooio");
+        
+        uavsLivresText.setText(String.valueOf(vehicles_list.length));
+        
+        for(int i = 0; i < vehicles_list.length; i++) {
+            if(vehicles_list[i].getActivePlan() == null)
+                inactive_vehicles++;
+            else
+                active_vehicles++;
+        }        
+        uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
+        uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
+        
+        if(active_vehicles+inactive_vehicles == 0)
+            progressBarOcupacao.setValue(100);
+        else
+            progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
+        
+        /*
+         * Atualiza a tabela de estados dos uavs
+         */
+        DefaultTableModel tabelaEstadoUavs = (DefaultTableModel) tableEstadoUavs.getModel();
+        Object rowDataUavs[] = new Object[4];        
+        //apaga todos os valores da tabela 
+        int tam = tabelaEstadoUavs.getRowCount();
+        for(int i = 0; i < tam; i++) {
+            tabelaEstadoUavs.removeRow(tabelaEstadoUavs.getRowCount()-1);            
+            tabelaEstadoUavs.fireTableDataChanged();            
+        }        
+        //adiciona os valores atualizados a tabela
+        for(int i = 0; i < vehicles_list.length; i++) {      
+            rowDataUavs[0] = vehicles_list[i].getName();
+            rowDataUavs[1] = vehicles_list[i].getLocation().getLatitudeAsPrettyString()+" "+vehicles_list[i].getLocation().getLongitudeAsPrettyString();
+            rowDataUavs[2] = vehicles_list[i].getLocation().getHeight() + " m"; 
+            
+            if(vehicles_list[i].getActivePlan() != null)
+                rowDataUavs[3] = vehicles_list[i].getActivePlan().toString();
+            else
+                rowDataUavs[3] = " - ";
+            
+            tabelaEstadoUavs.insertRow(i, rowDataUavs);
+            tabelaEstadoUavs.fireTableDataChanged();
+        }
+        
+        /*
+         * Atualiza a tabela de encomendas
+         */
+        DefaultTableModel tabelaEncomendas = (DefaultTableModel) tableEncomendas.getModel();
+        Object rowDataEncomendas[] = new Object[6];
+        
+        
+    }
+    
+
+    
+    
+    JTextField getUavsLivresText() {
+        return uavsLivresText;
+    }
+    JTextField getEntregasCursoText() {
+        return entregasCursoText;
+    }
+    JTextField getUavsOcupadosText() {
+        return uavsOcupadosText;
+    }
+    JTextField getEntregasPendentesText() {
+        return entregasPendentesText;
+    }
+    JTextField getuavsOpText() {
+        return uavsLivresText;
+    }
+    JTextField getUavsOpText() {
+        return uavsOpText;        
+    }
+    JTextField geyUavsFalhaText(){
+        return uavsFalhaText;
+    }
+    JTextField getEntregasSucessoText(){
+        return entregasSucessoText;
+    }
+    JTextField getEntregasFalhaText(){
+        return entregasFalhaText;
+    }
+    JTextField getTempText(){
+        return tempText;
+    }
+    JTextField getHumidadeText(){
+        return humidadeText;
+    }
+    JTextField getVentoText(){
+        return ventoText;
+    }
+    JProgressBar getProgressBarOcupacao() {
+        return progressBarOcupacao;        
+    }
+    JTable getTableEncomendas() {
+        return tableEncomendas;        
+    }
+    JTable getTableEstadoUavs() {
+        return tableEstadoUavs;
+    }
+    
+    
 }
