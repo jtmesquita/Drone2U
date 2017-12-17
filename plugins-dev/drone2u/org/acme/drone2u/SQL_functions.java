@@ -100,20 +100,6 @@ public class SQL_functions {
         return rs;
     }
 
-    /**
-     * Executa uma consulta do tipo <code>INSERT</code>, <code>UPDATE</code> ou <code>DELETE</code>
-     * @return <code>int</code> Retorna 1 em caso de sucesso; 0 caso contrário. 
-     */    
-    private int update (String insert) {        
-        try {
-            stmt = con.createStatement();            
-            return stmt.executeUpdate(insert);         
-
-        } catch (SQLException e) {
-            System.err.println(e);
-            return 0;
-        }        
-    }
 
     /**
      * Coloca o schema respetivo ao Drone2U na BD 
@@ -217,4 +203,79 @@ public class SQL_functions {
             return null;
         }
     }
+    
+    /**
+     * Função que atualiza na BD a localização de um dado drone
+     * @param UAV_id
+     * @param loc
+     */
+    public void InserUAVlocation(int UAV_id, LocationType loc) {
+        String latitude = loc.getLatitudeAsPrettyString();
+        String longitude = loc.getLongitudeAsPrettyString();
+        
+        String query = "UPDATE drone SET  longitude = '" + longitude + "', latitude = '"+latitude+"' WHERE id_d = "+UAV_id;
+        
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);         
+
+        } catch (SQLException e) {
+            System.err.println(e);
+        }    
+    }
+
+    /**
+     * Função que retorna a informação na base de dados relativamente
+     * a um caminho para uma dada encomenda
+     * 
+     * @param order_id
+     * @return String path[longitude, latitude]
+     */
+    public String[] getPathForOrder(int order_id) {
+        ResultSet rsaux;
+        
+        String query = "SELECT longitude, latitude FROM wprota WHERE id_wr ="+order_id;
+        
+        rsaux = execute(query);
+        
+        String[] path = new String[2];
+             
+        try {
+            rsaux.next();
+            
+            path[0] = rsaux.getString("longitude");
+            path[1] = rsaux.getString("latitude");
+            
+            return path;
+            
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+    
+    /**
+     * Atualiza o estado de uma encomenda (order_id) com o estado
+     * "state"
+     * @param order_id
+     * @param State
+     * @return
+     */
+    public int OrderStateUpdate(int order_id, String State) {
+        
+        String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_d = "+order_id;
+        
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+            return 1;
+
+        } catch (SQLException e) {
+            System.err.println(e);
+            return 0;
+        }    
+        
+    }
+
 }
