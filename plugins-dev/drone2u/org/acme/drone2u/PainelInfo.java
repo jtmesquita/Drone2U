@@ -47,6 +47,9 @@ import pt.lsts.neptus.plugins.update.Periodic;
 import pt.lsts.neptus.util.ImageUtils;
 
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
 import javax.swing.JLabel;
@@ -87,11 +90,14 @@ public class PainelInfo extends JPanel {
     private JTextField ventoText;
     private JProgressBar progressBarOcupacao;
     private JComboBox<String> comboBoxFiltroUav;
+    private SQL_functions database;
 
     /**
      * Create the panel.
      */
     public PainelInfo() {
+        database = new SQL_functions();      
+        
         setForeground(Color.RED);
         setBackground(new Color(102, 102, 102));
         
@@ -485,8 +491,16 @@ public class PainelInfo extends JPanel {
         comboBoxFiltroUav.setForeground(Color.BLACK);
         comboBoxFiltroUav.setBackground(Color.WHITE);
         
-       
-       
+        // chamada da função para conetar à base de dados
+        if(!database.isConnected()) {
+            Connection conn = database.connect();
+            database.setSchema();       
+        }
+        
+        ArrayList<String> names_db = database.getUavsNames();
+        names_db.add(0, "All");
+        String[] names = Arrays.copyOf(names_db.toArray(), names_db.toArray().length, String[].class);
+        comboBoxFiltroUav.setModel(new DefaultComboBoxModel<String>(names));
         
         JLabel lblEncomendas = new JLabel("Encomendas");
         lblEncomendas.setHorizontalAlignment(SwingConstants.LEFT);
@@ -547,33 +561,50 @@ public class PainelInfo extends JPanel {
         setLayout(groupLayout);
     }
     
-    //@Periodic(millisBetweenUpdates=500) // a cada 500 milisegundos atualiza a tabela de info dos UAVs 
-    public void refresh_table () {        
-        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
-        float inactive_vehicles = 0;
-        float active_vehicles = 0;    
+    /*
+     * Atualiza a tabela de encomendas
+     */
+   
+    public void refreshTableEncomendas () {
+        // chamada da função para conetar à base de dados
+        if(!database.isConnected()) {
+            Connection conn = database.connect();
+            database.setSchema();       
+        }
         
-        System.out.println("oioioooio");
+        ArrayList<ArrayList<String>> table_db = database.getEncomendas();
         
-        uavsLivresText.setText(String.valueOf(vehicles_list.length));
+        DefaultTableModel tabelaEncomendas = (DefaultTableModel) tableEncomendas.getModel();
+        Object rowDataEncomendas[] = new Object[6];
         
-        for(int i = 0; i < vehicles_list.length; i++) {
-            if(vehicles_list[i].getActivePlan() == null)
-                inactive_vehicles++;
-            else
-                active_vehicles++;
+     
+        //apaga todos os valores da tabela 
+        int tam = tabelaEncomendas.getRowCount();
+        for(int i = 0; i < tam; i++) {
+            tabelaEncomendas.removeRow(tabelaEncomendas.getRowCount()-1);            
+            tabelaEncomendas.fireTableDataChanged();            
         }        
-        uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
-        uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
+        //adiciona os valores atualizados a tabela
+        for(int i = 0; i < table_db.size(); i++) {      
+            rowDataEncomendas[0] = table_db.get(i).get(0);
+            rowDataEncomendas[1] = table_db.get(i).get(1);
+            rowDataEncomendas[2] = table_db.get(i).get(2);
+            rowDataEncomendas[3] = table_db.get(i).get(3);
+            rowDataEncomendas[4] = " - ";           
+            rowDataEncomendas[5] = " - ";                    
+                        
+            tabelaEncomendas.insertRow(i, rowDataEncomendas);
+            tabelaEncomendas.fireTableDataChanged();
+        }
+    }
+    
+    /*
+     * Atualiza a tabela de estados dos uavs
+     */
+    public void refreshTableEstadoUavs () {
+
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
         
-        if(active_vehicles+inactive_vehicles == 0)
-            progressBarOcupacao.setValue(100);
-        else
-            progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
-        
-        /*
-         * Atualiza a tabela de estados dos uavs
-         */
         DefaultTableModel tabelaEstadoUavs = (DefaultTableModel) tableEstadoUavs.getModel();
         Object rowDataUavs[] = new Object[4];        
         //apaga todos os valores da tabela 
@@ -596,18 +627,31 @@ public class PainelInfo extends JPanel {
             tabelaEstadoUavs.insertRow(i, rowDataUavs);
             tabelaEstadoUavs.fireTableDataChanged();
         }
-        
-        /*
-         * Atualiza a tabela de encomendas
-         */
-        DefaultTableModel tabelaEncomendas = (DefaultTableModel) tableEncomendas.getModel();
-        Object rowDataEncomendas[] = new Object[6];
-        
-        
     }
-    
+        
+    public void refresh_other () {
+        
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
+        float inactive_vehicles = 0;
+        float active_vehicles = 0;    
+                
+        uavsLivresText.setText(String.valueOf(vehicles_list.length));
+        
+        for(int i = 0; i < vehicles_list.length; i++) {
+            if(vehicles_list[i].getActivePlan() == null)
+                inactive_vehicles++;
+            else
+                active_vehicles++;
+        }        
+        uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
+        uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
+        
+        if(active_vehicles+inactive_vehicles == 0)
+            progressBarOcupacao.setValue(100);
+        else
+            progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
 
-    
+    }
     
     JTextField getUavsLivresText() {
         return uavsLivresText;

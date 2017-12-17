@@ -39,6 +39,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -277,5 +278,69 @@ public class SQL_functions {
         }    
         
     }
-
+    
+    /**
+     * Consulta na base de dados o nome dos UAVs
+     * @return uma ArrayList com o nome dos UAVs
+     */    
+    public ArrayList<String> getUavsNames() {    
+        
+        ResultSet rs1;    
+        ArrayList<String> names = new ArrayList<String>();   
+                   
+        String query = "SELECT DISTINCT nome_drone FROM drone";
+        rs1 = execute(query);
+        try {            
+            
+            while(rs1.next()) {
+                names.add(rs1.getString("nome_drone"));
+            }
+            
+            return names;            
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+    
+    
+    /**
+     * Consulta de informação relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
+     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
+     */ 
+    public ArrayList<ArrayList<String>> getEncomendas() {     
+        
+        ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        
+        ResultSet rs1;    
+        
+        
+        String query = "SELECT id_d, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
+                            "FROM encomenda,entrega,armazem,ponto_entrega_recolha\n" + 
+                            "WHERE encomenda.id_e = entrega.id_e AND\n" + 
+                            "armazem_recolha = armazem.id_a AND\n" + 
+                            "ponto_entrega = ponto_entrega_recolha.id_er";
+        
+        rs1 = execute(query);
+        try {            
+            
+            while(rs1.next()) {
+                ArrayList<String> row = new ArrayList<String>();                
+                row.add(rs1.getString("id_d"));
+                row.add(rs1.getString("id_e"));
+                row.add(rs1.getString("loc_inicial"));
+                row.add(rs1.getString("loc_final"));
+                
+                table.add(row);                
+            }
+            
+            return table;            
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }       
+    }
+    
 }

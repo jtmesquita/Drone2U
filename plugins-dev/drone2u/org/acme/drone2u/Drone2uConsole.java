@@ -200,9 +200,7 @@ public class Drone2uConsole extends ConsolePanel{
                 }
 
                 neptusPlan.getGraph().addManeuver(point);
-
             }
-
         }
 
 
@@ -391,7 +389,9 @@ public class Drone2uConsole extends ConsolePanel{
 
     @Periodic(millisBetweenUpdates=500) // a cada 30segundos é chamada a função
     public void update_gui() {
-        painelInfoPanel.refresh_table();
+        painelInfoPanel.refreshTableEstadoUavs();
+        painelInfoPanel.refreshTableEncomendas();
+        painelInfoPanel.refresh_other();
     }
 
     /**
