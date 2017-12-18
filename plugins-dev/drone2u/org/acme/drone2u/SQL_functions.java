@@ -316,12 +316,12 @@ public class SQL_functions {
         ResultSet rs1;    
         
         
-        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final " + 
-                            "FROM encomenda, entrega, armazem, ponto_entrega_recolha, drone " + 
-                            "WHERE encomenda.id_e = entrega.id_e AND " + 
-                            "armazem_recolha = armazem.id_a AND " + 
-                            "ponto_entrega = ponto_entrega_recolha.id_er AND " +
-                            "drone.id_d = entrega.id_d";
+        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
+                            "FROM entrega " + 
+                            "JOIN encomenda USING(id_e) " + 
+                            "JOIN armazem USING(id_a) " + 
+                            "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
+                            "JOIN drone USING(id_d) ";
 
         rs1 = execute(query);
         try {            
@@ -357,13 +357,13 @@ public class SQL_functions {
         ResultSet rs1;    
         
         
-        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final " + 
-                            "FROM encomenda, entrega, armazem, ponto_entrega_recolha, drone " + 
-                            "WHERE encomenda.id_e = entrega.id_e AND " + 
-                            "armazem_recolha = armazem.id_a AND " + 
-                            "ponto_entrega = ponto_entrega_recolha.id_er AND " +
-                            "drone.id_d = entrega.id_d AND " +
-                            "drone.nome_drone = '"+filter+"'";
+        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
+                            "FROM entrega " + 
+                            "JOIN encomenda USING(id_e) " + 
+                            "JOIN armazem USING(id_a) " + 
+                            "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
+                            "JOIN drone USING(id_d) "+
+                            "WHERE drone.nome_drone = '"+filter+"'";                            
 
         rs1 = execute(query);
         try {            

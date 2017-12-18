@@ -94,6 +94,7 @@ public class PainelInfo extends JPanel {
     private JProgressBar progressBarOcupacao;
     private JComboBox<String> comboBoxFiltroUav;
     private SQL_functions database;
+    private JTextField weatherDescriptionText;
 
     /**
      * Create the panel.
@@ -108,7 +109,7 @@ public class PainelInfo extends JPanel {
         drone2uLogo.setFont(new Font("DejaVu Sans", Font.BOLD, 20));
         drone2uLogo.setBackground(new Color(102, 102, 102));
         drone2uLogo.setHorizontalAlignment(SwingConstants.CENTER);
-        ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 94, 70);
+        ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 71, 53);
         drone2uLogo.setIcon(drone2u);
         drone2uLogo.setOpaque(true);
           
@@ -333,9 +334,9 @@ public class PainelInfo extends JPanel {
             groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 933, Short.MAX_VALUE)
+                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 956, Short.MAX_VALUE)
                             .addGap(12)
                             .addComponent(drone2uLogo))
                         .addGroup(groupLayout.createSequentialGroup()
@@ -351,24 +352,24 @@ public class PainelInfo extends JPanel {
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
+            groupLayout.createParallelGroup(Alignment.TRAILING)
                 .addGroup(groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
                         .addComponent(drone2uLogo)
                         .addComponent(lblPainelInfo, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE))
-                    .addGap(18)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-                        .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(panelTaxaOcupacao, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(ComponentPlacement.UNRELATED)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(panelTaxaOcupacao, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelEstadoUavs, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 139, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 158, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
-                        .addComponent(panelEncomendas, GroupLayout.PREFERRED_SIZE, 349, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(25, Short.MAX_VALUE))
+                        .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap(123, Short.MAX_VALUE))
         );
         
         JLabel lblCondiesMet = new JLabel("Condições meteo.");
@@ -399,44 +400,59 @@ public class PainelInfo extends JPanel {
         ventoText = new JTextField();
         ventoText.setEditable(false);
         ventoText.setColumns(10);
+        
+        weatherDescriptionText = new JTextField();
+        weatherDescriptionText.setHorizontalAlignment(SwingConstants.CENTER);
+        weatherDescriptionText.setEditable(false);
+        weatherDescriptionText.setColumns(10);
         GroupLayout gl_panelCondMeteo = new GroupLayout(panelCondMeteo);
         gl_panelCondMeteo.setHorizontalGroup(
             gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(lblCondiesMet, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                    .addContainerGap())
-                .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addGap(45)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
-                        .addComponent(lblTemperatura)
-                        .addComponent(lblVento)
-                        .addComponent(lblHumidade))
-                    .addPreferredGap(ComponentPlacement.UNRELATED)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
-                        .addComponent(humidadeText, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                        .addComponent(ventoText, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                        .addComponent(tempText, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
+                                .addComponent(lblHumidade)
+                                .addComponent(lblVento))
+                            .addGap(42))
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addComponent(lblTemperatura)
+                            .addPreferredGap(ComponentPlacement.UNRELATED)))
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(ventoText, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
+                        .addComponent(humidadeText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                        .addComponent(tempText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
                     .addGap(55))
+                .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                    .addGap(24)
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING, false)
+                        .addComponent(lblCondiesMet, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(weatherDescriptionText, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
+                    .addContainerGap(25, Short.MAX_VALUE))
         );
         gl_panelCondMeteo.setVerticalGroup(
             gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblCondiesMet, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                    .addGap(9)
+                    .addGap(1)
+                    .addComponent(weatherDescriptionText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(tempText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblTemperatura, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
+                        .addComponent(lblTemperatura, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(tempText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblVento, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                         .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblHumidade, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                         .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(21))
+                    .addContainerGap())
         );
         panelCondMeteo.setLayout(gl_panelCondMeteo);
         
@@ -670,7 +686,8 @@ public class PainelInfo extends JPanel {
                
         ventoText.setText(df.format(wind_velocity)+" km/h");
         humidadeText.setText(df.format(content.get(0).get("humidity"))+" %");
-        tempText.setText(df.format(temperature)+ " C");        
+        tempText.setText(df.format(temperature)+ " C");
+        weatherDescriptionText.setText(weather_description[1]);
     }
     
     
@@ -700,8 +717,6 @@ public class PainelInfo extends JPanel {
             progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
 
     }
-    
-    
     
     
     JTextField getUavsLivresText() {
@@ -749,6 +764,4 @@ public class PainelInfo extends JPanel {
     JTable getTableEstadoUavs() {
         return tableEstadoUavs;
     }
-    
-    
 }
