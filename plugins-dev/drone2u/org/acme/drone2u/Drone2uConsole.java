@@ -398,7 +398,7 @@ public class Drone2uConsole extends ConsolePanel{
      * Função que verifica se alguma encomenda é colocada na
      * base de dados
      */
-    @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    //@Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
     public void check_new_points() {
 
         // chamada da função para conetar à base de dados
