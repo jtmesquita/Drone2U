@@ -67,6 +67,7 @@ import pt.lsts.neptus.console.ConsolePanel;
 import pt.lsts.neptus.mp.Maneuver;
 import pt.lsts.neptus.mp.ManeuverLocation;
 import pt.lsts.neptus.mp.maneuvers.Goto;
+import pt.lsts.neptus.mp.maneuvers.Loiter;
 import pt.lsts.neptus.plugins.PluginDescription;
 import pt.lsts.neptus.plugins.Popup;
 import pt.lsts.neptus.plugins.Popup.POSITION;
@@ -210,7 +211,7 @@ public class Drone2uConsole extends ConsolePanel{
         pc.setOp(PlanControl.OP.START);
         pc.setRequestId(IMCSendMessageUtils.getNextRequestId());    // IMCSendMessageUtils.... é apenas para fins de sincronização
         pc.setPlanId(neptusPlan.getId());
-        System.out.println(neptusPlan.asIMCPlan().asXml(true));
+        //System.out.println(neptusPlan.asIMCPlan().asXml(true));
 
 
         PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());    // criação da mensagem IMC para ser mandada para p drone
@@ -251,6 +252,78 @@ public class Drone2uConsole extends ConsolePanel{
 
         return pc;
     }
+
+    public PlanControl buildPlan_loiter (String vehicleID, MissionType mt, LocationType loc, double speed, double height, double radius) {
+
+        PlanType neptusPlan = new PlanType(mt);
+        neptusPlan.addVehicle(vehicleID);
+
+        loc.convertToAbsoluteLatLonDepth();
+
+        ManeuverLocation maneuverLoc = new ManeuverLocation(loc);
+        maneuverLoc.setZ(height);
+        maneuverLoc.setZUnits(ManeuverLocation.Z_UNITS.HEIGHT);
+
+        Loiter point = new Loiter();
+        point.setManeuverLocation(maneuverLoc);
+        point.setSpeed(speed);
+        point.setRadius(radius);
+        point.setLoiterDuration(0);
+        point.setDirection("Clockwise");
+        point.setLoiterType("Circular");
+        point.setLength(1.0);
+        point.setBearing(0.0);
+
+        neptusPlan.getGraph().addManeuver(point);
+
+
+        PlanControl pc = new PlanControl();
+        pc.setType(PlanControl.TYPE.REQUEST);
+        pc.setOp(PlanControl.OP.START);
+        pc.setRequestId(IMCSendMessageUtils.getNextRequestId());    // IMCSendMessageUtils.... é apenas para fins de sincronização
+        pc.setPlanId(neptusPlan.getId());
+        //System.out.println(neptusPlan.asIMCPlan().asXml(true));
+
+
+        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());    // criação da mensagem IMC para ser mandada para p drone
+
+        SetEntityParameters heightc = new SetEntityParameters();
+        heightc.setName("Height Control");
+        EntityParameter activeP = new EntityParameter("Active", "true");
+        heightc.setParams(Arrays.asList(new EntityParameter[]{activeP}));
+
+        SetEntityParameters autopilot = new SetEntityParameters();
+        autopilot.setName("Autopilot");
+        autopilot.setParams(Arrays.asList(new EntityParameter[]{
+                new EntityParameter("Ardupilot Tracker", "false"),
+                new EntityParameter("Formation Flight", "false")}));
+
+        SetEntityParameters pathController = new SetEntityParameters();
+        pathController.setName("Path Control");
+        pathController.setParams(Arrays.asList(new EntityParameter[]{
+                new EntityParameter("Use controller", "true")
+        }));
+
+
+        // alteração da configuração do drone de modo a desligar a opção Ardupilot
+        // e ativação das opções Height control e PathControl
+        try {
+            pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] {
+                    heightc,
+                    autopilot,
+                    pathController
+            }));
+        }
+
+        catch (Exception e1) {
+            e1.printStackTrace();
+        }
+
+        pc.setArg(pSpec);     // envio do plano para o drone
+
+        return pc;
+    }
+
 
     /**
      * Inicializa a GUI do plugin.
@@ -398,7 +471,7 @@ public class Drone2uConsole extends ConsolePanel{
      * Função que verifica se alguma encomenda é colocada na
      * base de dados
      */
-    @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    //@Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
     public void check_new_points() {
 
         // chamada da função para conetar à base de dados
@@ -406,8 +479,8 @@ public class Drone2uConsole extends ConsolePanel{
             Connection conn = database.connect();
             database.setSchema();
         }
-        
-        
+
+
 
         // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
         int new_order_id = database.getId_last_order();
@@ -466,24 +539,23 @@ public class Drone2uConsole extends ConsolePanel{
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);
-        
-        
+
+
         System.out.println("Matosinhos:");
         System.out.println("    Temperatura: "+  temperature+" graus");
         System.out.println("    Humidade: "+ content.get(0).get("humidity"));
         System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
         System.out.println("    Descrição: "+weather_description[1]);
-        
+
         painelInfoPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
 
     }
 
-   /**
-    *
-    * @param order_id
-    * @return path
-    */
-    //public Vector<LocationType> getPath(int order_id) {
+    /**
+     *
+     * @param order_id
+     * @return path
+     */
     public LocationType[]  getPath(int order_id) {
 
         String[] latitudes;
@@ -498,10 +570,10 @@ public class Drone2uConsole extends ConsolePanel{
 
         size = latitudes.length;
 
-        for(int i=0; i<size; i++) {
-            System.out.println("latidute"+i+": "+latitudes[i]);
-            System.out.println("longitude"+i+": "+longitudes[i]);
-        }
+        //        for(int i=0; i<size; i++) {
+        //            System.out.println("latidute"+i+": "+latitudes[i]);
+        //            System.out.println("longitude"+i+": "+longitudes[i]);
+        //        }
 
 
         LocationType[] path = new LocationType[size];
@@ -514,13 +586,46 @@ public class Drone2uConsole extends ConsolePanel{
         }
 
 
-        for(int i=0; i<size; i++) {
-            System.out.println(path[i]);
-        }
+        //        for(int i=0; i<size; i++) {
+        //            System.out.println(path[i]);
+        //        }
 
 
         // path contém a trajetória a fazer pelo drone
         return path;
+    }
+
+    /**
+     * Função que verifica qual a manobra que um drone está a executar
+     */
+    @Periodic(millisBetweenUpdates=1000*5) // a cada 60segundos é chamada a função
+    public void check_maneuver() {
+        String raw_maneuver = null;
+        String uav_name = "x8-02";
+        String[] maneuver_aux;
+        String maneuver = "Vehicle unavailable";
+
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
+
+        for(int i = 0; i < vehicles_list.length; i++) {      
+            if (vehicles_list[i].getName().equals(uav_name)) {
+
+                if(vehicles_list[i].getActivePlan() == null) {
+                    maneuver = "No maneuvers yet";
+                }
+                else {
+                    raw_maneuver = vehicles_list[i].getActivePlan().toString(); // vem no formato: pl_btf1ym|Man:GOTO1 (nome_plano|man: nome_manobra)
+                    maneuver_aux = raw_maneuver.split(":");
+
+                    maneuver = maneuver_aux[1];
+
+                    System.out.println("manobra: "+maneuver);
+                }
+
+            }
+        }
+
+        //return maneuver;
     }
 
     /**
@@ -530,15 +635,16 @@ public class Drone2uConsole extends ConsolePanel{
 
         LocationType[] path;
 
-        path = getPath(19);
+        path = getPath(112);
 
-        PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 200);
+        //PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
+        
+        PlanControl pc = buildPlan_loiter("x8-02", getConsole().getMission(),path[0], 10, 700, 50.0);
 
         System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
 
-        sendPlanToVehicle("x8-02", getConsole(), pc);
-
-        database.OrderStateUpdate(19, "enviada");
+        //database.OrderStateUpdate(19, "enviada");
+        // tenho de atualizar a disponibilidade do drone na BD
 
     }
 
