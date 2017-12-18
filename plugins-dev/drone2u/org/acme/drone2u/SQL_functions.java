@@ -316,18 +316,61 @@ public class SQL_functions {
         ResultSet rs1;    
         
         
-        String query = "SELECT id_d, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
-                            "FROM encomenda,entrega,armazem,ponto_entrega_recolha\n" + 
-                            "WHERE encomenda.id_e = entrega.id_e AND\n" + 
-                            "armazem_recolha = armazem.id_a AND\n" + 
-                            "ponto_entrega = ponto_entrega_recolha.id_er";
-        
+        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final " + 
+                            "FROM encomenda, entrega, armazem, ponto_entrega_recolha, drone " + 
+                            "WHERE encomenda.id_e = entrega.id_e AND " + 
+                            "armazem_recolha = armazem.id_a AND " + 
+                            "ponto_entrega = ponto_entrega_recolha.id_er AND " +
+                            "drone.id_d = entrega.id_d";
+
         rs1 = execute(query);
         try {            
             
             while(rs1.next()) {
                 ArrayList<String> row = new ArrayList<String>();                
-                row.add(rs1.getString("id_d"));
+                row.add(rs1.getString("nome_drone"));
+                row.add(rs1.getString("id_e"));
+                row.add(rs1.getString("loc_inicial"));
+                row.add(rs1.getString("loc_final"));
+                
+                table.add(row);                
+            }
+            
+            return table;            
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }       
+    }
+    
+    
+    
+    /**
+     * Consulta de informação (filtrada) relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
+     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
+     */ 
+    public ArrayList<ArrayList<String>> getEncomendas(String filter) {     
+        
+        ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
+        
+        ResultSet rs1;    
+        
+        
+        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final " + 
+                            "FROM encomenda, entrega, armazem, ponto_entrega_recolha, drone " + 
+                            "WHERE encomenda.id_e = entrega.id_e AND " + 
+                            "armazem_recolha = armazem.id_a AND " + 
+                            "ponto_entrega = ponto_entrega_recolha.id_er AND " +
+                            "drone.id_d = entrega.id_d AND " +
+                            "drone.nome_drone = '"+filter+"'";
+
+        rs1 = execute(query);
+        try {            
+            
+            while(rs1.next()) {
+                ArrayList<String> row = new ArrayList<String>();                
+                row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("loc_inicial"));
                 row.add(rs1.getString("loc_final"));

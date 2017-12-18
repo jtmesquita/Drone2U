@@ -369,7 +369,7 @@ public class Drone2uConsole extends ConsolePanel{
                 stateUavsFrame.setVisible(true);*/
                 painelInfoFrame = new JFrame();
                 painelInfoFrame.add(painelInfoPanel);
-                painelInfoFrame.setSize(1065, 660);
+                painelInfoFrame.setSize(1063, 671);
                 painelInfoFrame.setVisible(true);
                 painelInfoFrame.setResizable(false);
 
@@ -387,11 +387,11 @@ public class Drone2uConsole extends ConsolePanel{
     }*/
 
 
-    @Periodic(millisBetweenUpdates=500) // a cada 30segundos é chamada a função
+    @Periodic(millisBetweenUpdates=1000) // a cada 1 segundo é chamada a função
     public void update_gui() {
         painelInfoPanel.refreshTableEstadoUavs();
-        painelInfoPanel.refreshTableEncomendas();
-        painelInfoPanel.refresh_other();
+        painelInfoPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
+        painelInfoPanel.refreshOther();
     }
 
     /**
@@ -406,6 +406,8 @@ public class Drone2uConsole extends ConsolePanel{
             Connection conn = database.connect();
             database.setSchema();
         }
+        
+        
 
         // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
         int new_order_id = database.getId_last_order();
@@ -443,7 +445,6 @@ public class Drone2uConsole extends ConsolePanel{
             }
 
             last_order_id = new_order_id;
-
         }
     }
 
@@ -465,19 +466,16 @@ public class Drone2uConsole extends ConsolePanel{
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);
-
-
+        
+        
         System.out.println("Matosinhos:");
         System.out.println("    Temperatura: "+  temperature+" graus");
         System.out.println("    Humidade: "+ content.get(0).get("humidity"));
         System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
         System.out.println("    Descrição: "+weather_description[1]);
+        
+        painelInfoPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
 
-
-
-        /*painelInfoPanel.getVentoText().setText(String.valueOf(content.get(1).get("speed")));
-        painelInfoPanel.getHumidadeText().setText(String.valueOf(content.get(0).get("humidity"))+" %");
-        painelInfoPanel.getTempText().setText(String.valueOf(content.get(0).get("temp"))+ " C");*/
     }
 
    /**
