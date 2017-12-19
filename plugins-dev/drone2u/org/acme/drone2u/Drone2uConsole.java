@@ -64,6 +64,11 @@ import pt.lsts.neptus.comm.manager.imc.ImcSystem;
 import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
 import pt.lsts.neptus.console.ConsoleLayout;
 import pt.lsts.neptus.console.ConsolePanel;
+import pt.lsts.neptus.console.ConsoleSystem;
+import pt.lsts.neptus.console.events.ConsoleEventMainSystemChange;
+import pt.lsts.neptus.console.events.ConsoleEventNewSystem;
+import pt.lsts.neptus.console.events.ConsoleEventSystemAuthorityStateChanged;
+import pt.lsts.neptus.console.events.ConsoleEventVehicleStateChanged;
 import pt.lsts.neptus.mp.Maneuver;
 import pt.lsts.neptus.mp.ManeuverLocation;
 import pt.lsts.neptus.mp.maneuvers.Goto;
@@ -90,6 +95,7 @@ public class Drone2uConsole extends ConsolePanel{
     private final String defaultCondition = "ManeuverIsDone";
     SQL_functions database = new SQL_functions();
     Weather data = new Weather();
+    Vector<String> UAV_map = new Vector<String>();   // na primeira posição contém o nome do UAV que está disponível no sistema
 
 
     //private UavsState stateUavsPanel = new UavsState();
@@ -627,7 +633,35 @@ public class Drone2uConsole extends ConsolePanel{
 
         //return maneuver;
     }
+    
+    @Periodic(millisBetweenUpdates=1000*5) // a cada 5segundos é chamada a função
+    public void LoiterNewVehicle() {
+        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
+        
+        for(int i=0; i<vehicles_list.length; i++) {
+            if( UAV_map.indexOf(vehicles_list[i].getName()) == -1) {
+                System.out.println("Ainda nao contém o UAV: "+vehicles_list[i].getName());
+                UAV_map.add(vehicles_list[i].getName());
+                
+                // coloca em loiter num armazém
+                
+                // chamada da função para conetar à base de dados
+                if(!database.isConnected()) {
+                    Connection conn = database.connect();
+                    database.setSchema();
+                }
+                
+                LocationType armazem_loc = new LocationType();
+                
+                armazem_loc = database.getWarehouseLoc();
+                
+                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
 
+                System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
+            }
+        }
+    }
+    
     /**
      * Função de teste
      */
@@ -637,9 +671,9 @@ public class Drone2uConsole extends ConsolePanel{
 
         path = getPath(112);
 
-        //PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
+        PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
         
-        PlanControl pc = buildPlan_loiter("x8-02", getConsole().getMission(),path[0], 10, 700, 50.0);
+        //PlanControl pc = buildPlan_loiter("x8-02", getConsole().getMission(),path[0], 10, 700, 50.0);
 
         System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
 

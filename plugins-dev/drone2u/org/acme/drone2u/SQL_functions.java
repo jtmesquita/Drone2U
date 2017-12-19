@@ -206,6 +206,31 @@ public class SQL_functions {
     }
     
     /**
+     * Função que rotorna a localização de um armazém no formato LocationType
+     * @return
+     */
+    public LocationType getWarehouseLoc() {
+        LocationType location = new LocationType();
+        ResultSet rsaux;
+
+        String query = "SELECT latitude, longitude FROM armazem WHERE nome = 'arm_1'";
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            location.setLatitudeStr(rsaux.getString("latitude"));
+            location.setLongitudeStr(rsaux.getString("longitude"));
+
+            return location;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        } 
+    }
+    
+    /**
      * Função que atualiza na BD a localização de um dado drone
      * @param UAV_id
      * @param loc
