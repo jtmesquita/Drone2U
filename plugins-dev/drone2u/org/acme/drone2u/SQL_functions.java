@@ -319,7 +319,7 @@ public class SQL_functions {
         String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
                             "FROM entrega " + 
                             "JOIN encomenda USING(id_e) " + 
-                            "JOIN armazem USING(id_a) " + 
+                            "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
                             "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
                             "JOIN drone USING(id_d) ";
 
@@ -360,7 +360,7 @@ public class SQL_functions {
         String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
                             "FROM entrega " + 
                             "JOIN encomenda USING(id_e) " + 
-                            "JOIN armazem USING(id_a) " + 
+                            "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
                             "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
                             "JOIN drone USING(id_d) "+
                             "WHERE drone.nome_drone = '"+filter+"'";                            
