@@ -60,14 +60,14 @@ public class SQL_functions {
     ResultSet rs;
 
     public Connection connect() {    
-        
+
         try {
             con = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to the PostgreSQL server successfully.");
         } catch (SQLException e) {
             //System.out.println(con.toString());
             System.out.println(e.getMessage());
-            
+
         }
 
         return con;
@@ -204,7 +204,7 @@ public class SQL_functions {
             return null;
         }
     }
-    
+
     /**
      * Função que rotorna a localização de um armazém no formato LocationType
      * @return
@@ -229,7 +229,7 @@ public class SQL_functions {
             return null;
         } 
     }
-    
+
     /**
      * Função que atualiza na BD a localização de um dado drone
      * @param UAV_id
@@ -238,9 +238,9 @@ public class SQL_functions {
     public void InserUAVlocation(int UAV_id, LocationType loc) {
         String latitude = loc.getLatitudeAsPrettyString();
         String longitude = loc.getLongitudeAsPrettyString();
-        
+
         String query = "UPDATE drone SET  longitude = '" + longitude + "', latitude = '"+latitude+"' WHERE id_d = "+UAV_id;
-        
+
         try {
             stmt = con.createStatement();            
             stmt.executeUpdate(query);         
@@ -259,28 +259,28 @@ public class SQL_functions {
      */
     public String[] getPathForOrder(int order_id) {
         ResultSet rsaux;
-        
+
         String query = "SELECT longitude, latitude FROM wprota WHERE id_wr ="+order_id;
-        
+
         rsaux = execute(query);
-        
+
         String[] path = new String[2];
-             
+
         try {
             rsaux.next();
-            
+
             path[0] = rsaux.getString("longitude");
             path[1] = rsaux.getString("latitude");
-            
+
             return path;
-            
+
         }
         catch (Exception e){
             System.err.println(e);
             return null;
         }
     }
-    
+
     /**
      * Atualiza o estado de uma encomenda (order_id) com o estado
      * "state"
@@ -289,9 +289,9 @@ public class SQL_functions {
      * @return
      */
     public int OrderStateUpdate(int order_id, String State) {
-        
+
         String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_d = "+order_id;
-        
+
         try {
             stmt = con.createStatement();            
             stmt.executeUpdate(query);
@@ -301,26 +301,44 @@ public class SQL_functions {
             System.err.println(e);
             return 0;
         }    
-        
+
     }
-    
+
+    /**
+     * Atualiza na base de dados a disponibilidade do drone
+     * @param UAV_name
+     * @param State
+     */
+    public void UAVstateUpdate(String UAV_name, String State){
+        String query = "UPDATE drone SET  disponibilidade = "+State+" WHERE nome_drone = '"+UAV_name+"'";
+
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+
+        } catch (SQLException e) {
+            System.err.println(e);
+        }    
+    }
+
+
     /**
      * Consulta na base de dados o nome dos UAVs
      * @return uma ArrayList com o nome dos UAVs
      */    
     public ArrayList<String> getUavsNames() {    
-        
+
         ResultSet rs1;    
         ArrayList<String> names = new ArrayList<String>();   
-                   
+
         String query = "SELECT DISTINCT nome_drone FROM drone";
         rs1 = execute(query);
         try {            
-            
+
             while(rs1.next()) {
                 names.add(rs1.getString("nome_drone"));
             }
-            
+
             return names;            
         }
         catch (Exception e){
@@ -328,39 +346,39 @@ public class SQL_functions {
             return null;
         }
     }
-    
-    
+
+
     /**
      * Consulta de informação relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
      * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
      */ 
     public ArrayList<ArrayList<String>> getEncomendas() {     
-        
+
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
-        
+
         ResultSet rs1;    
-        
-        
+
+
         String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
-                            "FROM entrega " + 
-                            "JOIN encomenda USING(id_e) " + 
-                            "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                            "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
-                            "JOIN drone USING(id_d) ";
+                "FROM entrega " + 
+                "JOIN encomenda USING(id_e) " + 
+                "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
+                "JOIN drone USING(id_d) ";
 
         rs1 = execute(query);
         try {            
-            
+
             while(rs1.next()) {
                 ArrayList<String> row = new ArrayList<String>();                
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("loc_inicial"));
                 row.add(rs1.getString("loc_final"));
-                
+
                 table.add(row);                
             }
-            
+
             return table;            
         }
         catch (Exception e){
@@ -368,41 +386,41 @@ public class SQL_functions {
             return null;
         }       
     }
-    
-    
-    
+
+
+
     /**
      * Consulta de informação (filtrada) relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
      * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
      */ 
     public ArrayList<ArrayList<String>> getEncomendas(String filter) {     
-        
+
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
-        
+
         ResultSet rs1;    
-        
-        
+
+
         String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
-                            "FROM entrega " + 
-                            "JOIN encomenda USING(id_e) " + 
-                            "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                            "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
-                            "JOIN drone USING(id_d) "+
-                            "WHERE drone.nome_drone = '"+filter+"'";                            
+                "FROM entrega " + 
+                "JOIN encomenda USING(id_e) " + 
+                "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
+                "JOIN drone USING(id_d) "+
+                "WHERE drone.nome_drone = '"+filter+"'";                            
 
         rs1 = execute(query);
         try {            
-            
+
             while(rs1.next()) {
                 ArrayList<String> row = new ArrayList<String>();                
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("loc_inicial"));
                 row.add(rs1.getString("loc_final"));
-                
+
                 table.add(row);                
             }
-            
+
             return table;            
         }
         catch (Exception e){
@@ -410,5 +428,5 @@ public class SQL_functions {
             return null;
         }       
     }
-    
+
 }
