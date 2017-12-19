@@ -37,7 +37,9 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
@@ -84,6 +86,7 @@ import pt.lsts.neptus.types.mission.MissionType;
 import pt.lsts.neptus.types.mission.TransitionType;
 import pt.lsts.neptus.types.mission.plan.PlanType;
 import pt.lsts.neptus.util.ImageUtils;
+import java.util.Date;
 
 /**
  * @author joao mesquita e pedro guedes
@@ -152,6 +155,7 @@ public class Drone2uConsole extends ConsolePanel{
                 Goto point = new Goto();
                 point.setManeuverLocation(maneuverLoc);
                 point.setSpeed(speed);
+                point.setId(getNewManeuverName(neptusPlan, "GOTO"));
 
                 neptusPlan.getGraph().addManeuver(point);
 
@@ -625,7 +629,7 @@ public class Drone2uConsole extends ConsolePanel{
 
         for(int i = 0; i < vehicles_list.length; i++) { 
             if(vehicles_list[i].getActivePlan() == null) {
-                maneuver = "No maneuvers yet";
+                maneuver = "No maneuvers";
             }
             else {
                 raw_maneuver = vehicles_list[i].getActivePlan().toString(); // vem no formato: pl_btf1ym|Man:GOTO1 (nome_plano|man: nome_manobra)
@@ -642,9 +646,51 @@ public class Drone2uConsole extends ConsolePanel{
             else
                 database.UAVstateUpdate(vehicles_list[i].getName(), "FALSE");
 
-        }
+            if(maneuver.equals("No maneuvers")) {
+                //faz loiter
+                // chamada da função para conetar à base de dados
 
+                LocationType armazem_loc = new LocationType();
+
+                armazem_loc = database.getWarehouseLoc();
+
+                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
+
+                System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
+            }
+
+        }
+        
+        System.out.println("Maneuver: "+maneuver);
         //return maneuver;
+    }
+    
+    /**
+     * Função que deteta a transição entre o estado de ececução de uma manobra (nosso caso entrega)
+     * e o estado livre.
+     * @param event
+     */
+    @Subscribe
+    public void on(ConsoleEventVehicleStateChanged event) {
+        if(event.getState().toString().equals("SERVICE")) {
+            //  ou seja deve ter terminado uma manobra ou entrou em serviço pela primeira vez
+            //  só faz algo se estiver na lista UAV_Map
+            if( UAV_map.indexOf(event.getVehicle().toString()) != -1) {                
+                //  vai guardar a hora de finalização de encomenda
+                //  para isso vai buscar qual a última encomenda que o drone fez (na base de dados na tabela entrega)
+
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                
+                String[] data_fim;
+                
+                data_fim = dateFormat.format(date).split(" ");
+                
+                System.out.println("hora: "+data_fim[1]);
+                System.out.println("data: "+data_fim[0]);
+            }
+
+        }
     }
 
 
@@ -672,12 +718,23 @@ public class Drone2uConsole extends ConsolePanel{
                 PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
 
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
+                
+                //coloca a hora e data de inicio da entrega
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                
+                String[] data_fim;
+                
+                data_fim = dateFormat.format(date).split(" ");
+                
+                System.out.println("hora: "+data_fim[1]);
+                System.out.println("data: "+data_fim[0]);
             }
         }
     }
 
-    
-    
+
+
     /**
      * Função de teste
      */

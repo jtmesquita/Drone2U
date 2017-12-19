@@ -321,6 +321,39 @@ public class SQL_functions {
         }    
     }
 
+    /**
+     * Atualiza a hora e data de envio de uma encomenda
+     * @param id_encomenda
+     * @param data_hora
+     */
+    public void UpdateDateSend(int id_encomenda, String[] data_hora) {
+
+        String query = "UPDATE encomenda SET  data_env = '"+data_hora[0]+"', hora_env = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
+
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+
+        } catch (SQLException e) {
+            System.err.println(e);
+        }  
+
+    }
+
+    public void UpdateDateDelivered(int id_encomenda, String[] data_hora) {
+
+        String query = "UPDATE encomenda SET  data_entr = '"+data_hora[0]+"', hora_entr = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
+
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+
+        } catch (SQLException e) {
+            System.err.println(e);
+        }  
+
+    }
+
 
     /**
      * Consulta na base de dados o nome dos UAVs
