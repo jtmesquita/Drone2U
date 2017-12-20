@@ -136,18 +136,18 @@ public class SQL_functions {
 
 
     /**
-     * Vai buscar o ultimo id da lista de encomendas
+     * Vai buscar o ultimo id da lista de encomendas prontas a serem enviadas
      */
     public int getId_last_order() {
         ResultSet rsaux;
 
-        String query = "SELECT id_e FROM encomenda ORDER BY id_e DESC";     // vai buscar o ultimo id das encomendas
+        String query = "SELECT id_wr FROM wprota ORDER BY id_wr DESC";     // vai buscar o ultimo id das encomendas
 
         rsaux = execute(query);
 
         try {
             rsaux.next();
-            return rsaux.getInt("id_e");
+            return rsaux.getInt("id_wr");
         }
         catch (Exception e){
             System.err.println(e);
@@ -159,18 +159,20 @@ public class SQL_functions {
     /**
      * Função que retorna os ids das encomendas que são com um
      * id superior ao last_id
+     * @param last_id
+     * @return
      */
     public Vector<Integer> get_order_IDs (int last_id) {
         ResultSet rsaux;
         Vector<Integer> Ids = new Vector<>();
 
-        String query = "SELECT id_e FROM encomenda WHERE id_e >" +last_id + "ORDER BY id_e ASC";
+        String query = "SELECT id_wr FROM wprota WHERE id_wr >" +last_id + "ORDER BY id_wr ASC";
 
         rsaux = execute(query);
         try {
             while (rsaux.next())
             {
-                Ids.add(rsaux.getInt("id_e"));
+                Ids.add(rsaux.getInt("id_wr"));
             }
             return Ids;
         }
@@ -290,7 +292,7 @@ public class SQL_functions {
      */
     public int OrderStateUpdate(int order_id, String State) {
 
-        String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_d = "+order_id;
+        String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_e = "+order_id;
 
         try {
             stmt = con.createStatement();            
@@ -354,6 +356,91 @@ public class SQL_functions {
 
     }
 
+    /**
+     * Função que devevolve o nome do drone associado a uma encomenda
+     * @param order_id
+     * @return
+     */
+    public String getDroneForOrder(int order_id) {
+        ResultSet rsaux;
+
+        String query = "SELECT nome_drone FROM wprota JOIN drone USING (id_d) WHERE id_wr = "+order_id;
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getString("nome_drone");
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+
+
+    /**
+     * Devolve o número da ultima encomenda feita pelo drone (presente na tabela entrega)
+     * @param UAV_name
+     * @return
+     */
+    public int getLastOrderIdDrone(String UAV_name) {
+        ResultSet rsaux;
+
+        String query = "SELECT id_e FROM entrega JOIN drone USING (id_d) WHERE nome_drone = '"+UAV_name+"' ORDER BY id_e DESC";
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getInt("id_e");
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+    /**
+     * Retorna o id do drone
+     * @param UAV_name
+     * @return
+     */
+    public int getDroneId(String UAV_name) {
+        ResultSet rsaux;
+
+        String query = "SELECT id_d FROM drone WHERE nome_drone='"+UAV_name+"'";
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getInt("id_d");
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+    /**
+     * Insere na tabela entrega os dados respetivos
+     * @param Order_id
+     * @param DroneID
+     * @param meteo
+     */
+    public void InsertEntrega(int Order_id, int DroneID, String meteo) {
+        String query = "INSERT INTO entrega (id_d, id_e, cond_meteo) VALUES("+DroneID+", "+Order_id+",'"+meteo+"')";
+
+        try {
+            stmt = con.createStatement();            
+            stmt.executeUpdate(query);
+
+        } catch (SQLException e) {
+            System.err.println(e);
+        }  
+
+    }
 
     /**
      * Consulta na base de dados o nome dos UAVs

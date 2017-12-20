@@ -107,7 +107,7 @@ public class Drone2uConsole extends ConsolePanel{
     private PainelInfo painelInfoPanel = new PainelInfo();
     //private JFrame stateUavsFrame;
     private JFrame painelInfoFrame;
-    int last_order_id = 100;
+    int last_order_id = 253;
 
 
     /**
@@ -622,7 +622,7 @@ public class Drone2uConsole extends ConsolePanel{
 
         // chamada da função para conetar à base de dados
         if(!database.isConnected()) {
-            Connection conn = database.connect();
+            database.connect();
             database.setSchema();
         }
 
@@ -660,14 +660,15 @@ public class Drone2uConsole extends ConsolePanel{
             }
 
         }
-        
+
         System.out.println("Maneuver: "+maneuver);
         //return maneuver;
     }
-    
+
     /**
      * Função que deteta a transição entre o estado de ececução de uma manobra (nosso caso entrega)
      * e o estado livre.
+     * Atualiza a hora e data de uma entregua assim como atualiza o estado da ecomenda para entregue
      * @param event
      */
     @Subscribe
@@ -679,15 +680,21 @@ public class Drone2uConsole extends ConsolePanel{
                 //  vai guardar a hora de finalização de encomenda
                 //  para isso vai buscar qual a última encomenda que o drone fez (na base de dados na tabela entrega)
 
+                int OrderId = database.getLastOrderIdDrone(event.getVehicle().toString());
+                
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
-                
+
                 String[] data_fim;
-                
+
                 data_fim = dateFormat.format(date).split(" ");
+
+                // atualiza hora e data de entrega
+                database.UpdateDateDelivered(OrderId, data_fim);
                 
-                System.out.println("hora: "+data_fim[1]);
-                System.out.println("data: "+data_fim[0]);
+                //altera o estado para entregue
+               
+                database.OrderStateUpdate(OrderId, "entregue");
             }
 
         }
@@ -707,7 +714,7 @@ public class Drone2uConsole extends ConsolePanel{
 
                 // chamada da função para conetar à base de dados
                 if(!database.isConnected()) {
-                    Connection conn = database.connect();
+                    database.connect();
                     database.setSchema();
                 }
 
@@ -718,15 +725,15 @@ public class Drone2uConsole extends ConsolePanel{
                 PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
 
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
-                
+
                 //coloca a hora e data de inicio da entrega
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
-                
+
                 String[] data_fim;
-                
+
                 data_fim = dateFormat.format(date).split(" ");
-                
+
                 System.out.println("hora: "+data_fim[1]);
                 System.out.println("data: "+data_fim[0]);
             }
@@ -734,22 +741,95 @@ public class Drone2uConsole extends ConsolePanel{
     }
 
 
+    /**
+     * Função que verifica se alguma encomenda está pronta para ser 
+     * enviada
+     */
+    //@Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    public void check_new_Orders() {
+
+        // chamada da função para conetar à base de dados
+        if(!database.isConnected()) {
+            database.connect();
+            database.setSchema();
+        }
+
+        // antes de enviar o drone verificar condições meteorológicas
+        /*
+         * 
+         * 
+         * 
+         * 
+         * 
+         * 
+         */
+
+        // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
+        int new_order_id = database.getId_last_order();
+
+        if( new_order_id> last_order_id) {
+            System.out.println("Nova encomenda na bd. ID= "+database.getId_last_order());
+
+            Vector<Integer> list_ids;
+
+            list_ids = database.get_order_IDs(last_order_id);
+
+            for(Integer id : list_ids) {
+                System.out.println(id);
+
+                // ver o caminho que a entrega tem de fazer
+                String drone;
+                LocationType[] path;
+
+                drone = database.getDroneForOrder(id);
+                path = getPath(id);
+
+                PlanControl pc = buildPlan(drone, getConsole().getMission(),path, 20, 200);
+
+                System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
+                
+                //tenho de inserir na tabela entrega
+                
+                int DroneId = database.getDroneId(drone);
+                
+                database.InsertEntrega(id, DroneId, "TRUE");
+                
+                // atualiza data e hora de envio
+                
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+
+                String[] data_envio;
+
+                data_envio = dateFormat.format(date).split(" ");
+                
+                database.UpdateDateSend(254, data_envio);
+
+                // atualiza o estado da encomenda
+                database.OrderStateUpdate(254, "enviada");
+            }
+
+            //os drones foram enviados
+            last_order_id = new_order_id;
+        }
+    }
 
     /**
      * Função de teste
      */
     public void TesteRota() {
+        
+        check_new_Orders();
 
-        LocationType[] path;
+        /*LocationType[] path;
 
-        path = getPath(119);
+        path = getPath(251);
 
         PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
 
         System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
 
-        //database.OrderStateUpdate(19, "enviada");
-        // tenho de atualizar a disponibilidade do drone na BD
+        database.OrderStateUpdate(151, "enviada");*/
 
     }
 
