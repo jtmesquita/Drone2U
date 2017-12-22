@@ -107,7 +107,9 @@ public class Drone2uConsole extends ConsolePanel{
     private PainelInfo painelInfoPanel = new PainelInfo();
     //private JFrame stateUavsFrame;
     private JFrame painelInfoFrame;
-    int last_order_id = 253;
+    int vel = 40;
+    int height = 700;
+    int last_order_id = 256;
 
 
     /**
@@ -525,7 +527,7 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[0] = warehouse;
                 destArray[1] = final_location;
 
-                PlanControl pc = buildPlan("x8-02", getConsole().getMission(),destArray, 20, 200);
+                PlanControl pc = buildPlan("x8-02", getConsole().getMission(),destArray, vel, height);
 
                 System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
             }
@@ -569,14 +571,21 @@ public class Drone2uConsole extends ConsolePanel{
      * @param order_id
      * @return path
      */
-    public LocationType[]  getPath(int order_id) {
+    public LocationType[]  getPath(int order_id, String way) {
 
         String[] latitudes;
         String[] longitudes;
         String[] path_fromBD = new String[2];
         int size;
 
-        path_fromBD = database.getPathForOrder(order_id);
+        if ( way.equals("entrega"))
+        {
+            path_fromBD = database.getPathForOrder(order_id); 
+        }
+        else if(way.equals("regresso")) {
+            path_fromBD = database.getPathToWhareHouse(order_id);
+        }
+
 
         latitudes = path_fromBD[1].split(";");
         longitudes = path_fromBD[0].split(";");
@@ -597,12 +606,6 @@ public class Drone2uConsole extends ConsolePanel{
             path[i].setLatitudeStr(latitudes[i]);;
             path[i].setLongitudeStr(longitudes[i]);
         }
-
-
-        //        for(int i=0; i<size; i++) {
-        //            System.out.println(path[i]);
-        //        }
-
 
         // path contém a trajetória a fazer pelo drone
         return path;
@@ -646,18 +649,18 @@ public class Drone2uConsole extends ConsolePanel{
             else
                 database.UAVstateUpdate(vehicles_list[i].getName(), "FALSE");
 
-            if(maneuver.equals("No maneuvers")) {
-                //faz loiter
-                // chamada da função para conetar à base de dados
-
-                LocationType armazem_loc = new LocationType();
-
-                armazem_loc = database.getWarehouseLoc();
-
-                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
-
-                System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
-            }
+//            if(maneuver.equals("No maneuvers")) {
+//                //faz loiter
+//                // chamada da função para conetar à base de dados
+//
+//                LocationType armazem_loc = new LocationType();
+//
+//                armazem_loc = database.getWarehouseLoc();
+//
+//                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
+//
+//                System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
+//            }
 
         }
 
@@ -677,24 +680,60 @@ public class Drone2uConsole extends ConsolePanel{
             //  ou seja deve ter terminado uma manobra ou entrou em serviço pela primeira vez
             //  só faz algo se estiver na lista UAV_Map
             if( UAV_map.indexOf(event.getVehicle().toString()) != -1) {                
+
+                int OrderId = database.getLastOrderIdDrone(event.getVehicle().toString());
+
                 //  vai guardar a hora de finalização de encomenda
                 //  para isso vai buscar qual a última encomenda que o drone fez (na base de dados na tabela entrega)
 
-                int OrderId = database.getLastOrderIdDrone(event.getVehicle().toString());
-                
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
+                if( database.getOrderState(OrderId).equals("enviada")) {    
+                    //verificar o estado da encomenda - se estiver "enviada" significa que acabou de entregar
+                    //então vai atualizar a hora de fim e vai ter de enviar o drone para o armazém mais próximo
 
-                String[] data_fim;
+                    // vou então atualizar as horas de entrega
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    Date date = new Date();
 
-                data_fim = dateFormat.format(date).split(" ");
+                    String[] data_fim;
 
-                // atualiza hora e data de entrega
-                database.UpdateDateDelivered(OrderId, data_fim);
-                
-                //altera o estado para entregue
-               
-                database.OrderStateUpdate(OrderId, "entregue");
+                    data_fim = dateFormat.format(date).split(" ");
+
+                    // atualiza hora e data de entrega
+                    database.UpdateDateDelivered(OrderId, data_fim);
+
+                    //altera o estado para entregue
+
+                    database.OrderStateUpdate(OrderId, "entregue");
+
+                    // vou ter de ir buscar o percurso para o drone ir para o armazém e enviar esse plano para o drone
+                    LocationType[] path;
+                    path = getPath(OrderId, "regresso");
+
+                    // Envio o caminho para o drone
+                    PlanControl pc = buildPlan(event.getVehicle().toString(), getConsole().getMission(),path, vel, height);
+                    System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                }
+                else if( database.getOrderState(OrderId).equals("entregue")) {
+                    // caso o estado da ecomenda já estaja "entregue" então o drone vai fazer loiter ao armazém
+                    // para saber qual o armazém a qual fazer loiter vou ter de ir à rota de regresso do drone 
+                    // à última posição e retirar de lá o localização do armazém e manda fazer loiter
+                    LocationType[] path;
+                    LocationType whareHouse = new LocationType();
+                    
+                    path = getPath(OrderId, "regresso");
+                    
+                    whareHouse = path[path.length-1];
+                    
+                    PlanControl pc = buildPlan_loiter(event.getVehicle().toString(), getConsole().getMission(),whareHouse, 10, 700, 25.0);
+
+                    System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                }
+
+
+
+                // caso o estado da ecomenda já estaja "entregue" então o drone vai fazer loiter ao armazém
+                // para saber qual o armazém a qual fazer loiter vou ter de ir à rota de regresso do drone 
+                // à última posição e retirar de lá o localização do armazém e manda fazer loiter
             }
 
         }
@@ -727,15 +766,15 @@ public class Drone2uConsole extends ConsolePanel{
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
 
                 //coloca a hora e data de inicio da entrega
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
-
-                String[] data_fim;
-
-                data_fim = dateFormat.format(date).split(" ");
-
-                System.out.println("hora: "+data_fim[1]);
-                System.out.println("data: "+data_fim[0]);
+//                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//                Date date = new Date();
+//
+//                String[] data_fim;
+//
+//                data_fim = dateFormat.format(date).split(" ");
+//
+//                System.out.println("hora: "+data_fim[1]);
+//                System.out.println("data: "+data_fim[0]);
             }
         }
     }
@@ -782,31 +821,31 @@ public class Drone2uConsole extends ConsolePanel{
                 LocationType[] path;
 
                 drone = database.getDroneForOrder(id);
-                path = getPath(id);
+                path = getPath(id, "entrega");
 
-                PlanControl pc = buildPlan(drone, getConsole().getMission(),path, 20, 200);
+                PlanControl pc = buildPlan(drone, getConsole().getMission(),path, vel, height);
 
                 System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
-                
+
                 //tenho de inserir na tabela entrega
-                
+
                 int DroneId = database.getDroneId(drone);
-                
+
                 database.InsertEntrega(id, DroneId, "TRUE");
-                
+
                 // atualiza data e hora de envio
-                
+
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
 
                 String[] data_envio;
 
                 data_envio = dateFormat.format(date).split(" ");
-                
-                database.UpdateDateSend(254, data_envio);
+
+                database.UpdateDateSend(id, data_envio);
 
                 // atualiza o estado da encomenda
-                database.OrderStateUpdate(254, "enviada");
+                database.OrderStateUpdate(id, "enviada");
             }
 
             //os drones foram enviados
@@ -818,7 +857,7 @@ public class Drone2uConsole extends ConsolePanel{
      * Função de teste
      */
     public void TesteRota() {
-        
+
         check_new_Orders();
 
         /*LocationType[] path;

@@ -284,6 +284,37 @@ public class SQL_functions {
     }
 
     /**
+     * Retorna o caminho para o aramzém que o drone tem de seguir após
+     * finalizar uma entrega 
+     * @param order_id
+     * @return path[]
+     */
+    public String[] getPathToWhareHouse(int order_id) {
+        ResultSet rsaux;
+
+        String query = "SELECT longitude2, latitude2 FROM wprota WHERE id_wr ="+order_id;
+
+        rsaux = execute(query);
+
+        String[] path = new String[2];
+
+        try {
+            rsaux.next();
+
+            path[0] = rsaux.getString("longitude2");
+            path[1] = rsaux.getString("latitude2");
+
+            return path;
+
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+    
+    
+    /**
      * Atualiza o estado de uma encomenda (order_id) com o estado
      * "state"
      * @param order_id
@@ -305,7 +336,29 @@ public class SQL_functions {
         }    
 
     }
+    
+    /**
+     * Retorda o estado de uma encomenda
+     * @param order_id
+     * @return
+     */
+    public String getOrderState(int order_id) {
+        ResultSet rsaux;
 
+        String query = "SELECT estado FROM faz WHERE id_e ="+order_id;     // vai buscar o ultimo id das encomendas
+
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getString("estado");
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
+    }
+    
     /**
      * Atualiza na base de dados a disponibilidade do drone
      * @param UAV_name
