@@ -238,8 +238,8 @@ public class SQL_functions {
      * @param loc
      */
     public void InserUAVlocation(int UAV_id, LocationType loc) {
-        String latitude = loc.getLatitudeAsPrettyString();
-        String longitude = loc.getLongitudeAsPrettyString();
+        String latitude = String.valueOf(loc.getLatitudeDegs());
+        String longitude = String.valueOf(loc.getLongitudeDegs()); 
 
         String query = "UPDATE drone SET  longitude = '" + longitude + "', latitude = '"+latitude+"' WHERE id_d = "+UAV_id;
 

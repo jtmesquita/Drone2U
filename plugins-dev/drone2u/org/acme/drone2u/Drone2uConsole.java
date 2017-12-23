@@ -649,22 +649,9 @@ public class Drone2uConsole extends ConsolePanel{
             else
                 database.UAVstateUpdate(vehicles_list[i].getName(), "FALSE");
 
-//            if(maneuver.equals("No maneuvers")) {
-//                //faz loiter
-//                // chamada da função para conetar à base de dados
-//
-//                LocationType armazem_loc = new LocationType();
-//
-//                armazem_loc = database.getWarehouseLoc();
-//
-//                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
-//
-//                System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
-//            }
-
         }
 
-        System.out.println("Maneuver: "+maneuver);
+        //System.out.println("Maneuver: "+maneuver);
         //return maneuver;
     }
 
@@ -727,13 +714,11 @@ public class Drone2uConsole extends ConsolePanel{
                     PlanControl pc = buildPlan_loiter(event.getVehicle().toString(), getConsole().getMission(),whareHouse, 10, 700, 25.0);
 
                     System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                    
+                    // atualiza na base de dados a nova localização do drone
+                    int UAV_id = database.getDroneId(event.getVehicle().toString());
+                    database.InserUAVlocation(UAV_id, whareHouse);
                 }
-
-
-
-                // caso o estado da ecomenda já estaja "entregue" então o drone vai fazer loiter ao armazém
-                // para saber qual o armazém a qual fazer loiter vou ter de ir à rota de regresso do drone 
-                // à última posição e retirar de lá o localização do armazém e manda fazer loiter
             }
 
         }
@@ -764,6 +749,10 @@ public class Drone2uConsole extends ConsolePanel{
                 PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
 
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
+                
+                //atualiza localização na base de dados
+                int UAV_id = database.getDroneId(vehicles_list[i].getName().toString());
+                database.InserUAVlocation(UAV_id, armazem_loc);
 
                 //coloca a hora e data de inicio da entrega
 //                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -802,6 +791,14 @@ public class Drone2uConsole extends ConsolePanel{
          * 
          * 
          */
+        
+        /* Antes de enviar o drone verififar mesmo a disponibilidade dele
+         * 
+         * 
+         * 
+         * 
+         * 
+         * */
 
         // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
         int new_order_id = database.getId_last_order();
