@@ -620,13 +620,19 @@ public class PainelInfo extends JPanel {
         }        
         //adiciona os valores atualizados a tabela
         for(int i = 0; i < table_db.size(); i++) {
+            
                        
             rowDataEncomendas[0] = table_db.get(i).get(0);
             rowDataEncomendas[1] = table_db.get(i).get(1);
-            rowDataEncomendas[2] = table_db.get(i).get(2);
-            rowDataEncomendas[3] = table_db.get(i).get(3);
-            rowDataEncomendas[4] = " - ";           
-            rowDataEncomendas[5] = " - ";                    
+            
+            if(table_db.get(i).get(2) != null)            
+                    rowDataEncomendas[2] = table_db.get(i).get(2) + " ("+table_db.get(i).get(3) + ")";
+            else
+                rowDataEncomendas[2] = table_db.get(i).get(4) + " ("+table_db.get(i).get(5) + ")";                                      
+
+            rowDataEncomendas[3] = table_db.get(i).get(6) + " ("+table_db.get(i).get(7) + ")";
+            rowDataEncomendas[4] = table_db.get(i).get(8);    
+            rowDataEncomendas[5] = table_db.get(i).get(9);                  
                         
             tabelaEncomendas.insertRow(i, rowDataEncomendas);
             tabelaEncomendas.fireTableDataChanged();

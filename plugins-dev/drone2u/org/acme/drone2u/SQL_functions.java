@@ -532,13 +532,23 @@ public class SQL_functions {
         ResultSet rs1;    
 
 
-        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
-                "FROM entrega " + 
-                "JOIN encomenda USING(id_e) " + 
-                "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
-                "JOIN drone USING(id_d) ";
-
+        String query = "SELECT nome_drone, " +                               
+                            "encomenda.id_e," + 
+                            "armazem.nome as arm_nome, " + 
+                            "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
+                            "pt_recol.nome as pt_recol_nome, " + 
+                            "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
+                            "pt_entr.nome as pt_entr_nome, " + 
+                            "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                            "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                            "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
+                                "FROM entrega  " + 
+                                "LEFT JOIN encomenda USING(id_e) " + 
+                                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
+                                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
+                                "LEFT JOIN drone USING(id_d)";
+    
         rs1 = execute(query);
         try {            
 
@@ -546,9 +556,15 @@ public class SQL_functions {
                 ArrayList<String> row = new ArrayList<String>();                
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
-                row.add(rs1.getString("loc_inicial"));
+                row.add(rs1.getString("arm_nome"));
+                row.add(rs1.getString("loc_inicial_arm"));
+                row.add(rs1.getString("pt_recol_nome"));
+                row.add(rs1.getString("loc_inicial_ponto"));
+                row.add(rs1.getString("pt_entr_nome"));
                 row.add(rs1.getString("loc_final"));
-
+                row.add(rs1.getString("data_env"));
+                row.add(rs1.getString("data_entr"));           
+          
                 table.add(row);                
             }
 
@@ -573,12 +589,22 @@ public class SQL_functions {
         ResultSet rs1;    
 
 
-        String query = "SELECT nome_drone, encomenda.id_e, concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial, concat(ponto_entrega_recolha.latitude, ' ', ponto_entrega_recolha.longitude) as loc_final\n" + 
-                "FROM entrega " + 
-                "JOIN encomenda USING(id_e) " + 
-                "JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                "JOIN ponto_entrega_recolha ON ponto_entrega = ponto_entrega_recolha.id_er " + 
-                "JOIN drone USING(id_d) "+
+        String query = "SELECT nome_drone, " +                               
+                "encomenda.id_e," + 
+                "armazem.nome as arm_nome, " + 
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
+                "pt_recol.nome as pt_recol_nome, " + 
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
+                "pt_entr.nome as pt_entr_nome, " + 
+                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
+                    "FROM entrega  " + 
+                    "LEFT JOIN encomenda USING(id_e) " + 
+                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
+                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
+                    "LEFT JOIN drone USING(id_d) " +        
                 "WHERE drone.nome_drone = '"+filter+"'";                            
 
         rs1 = execute(query);
@@ -588,9 +614,15 @@ public class SQL_functions {
                 ArrayList<String> row = new ArrayList<String>();                
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
-                row.add(rs1.getString("loc_inicial"));
+                row.add(rs1.getString("arm_nome"));
+                row.add(rs1.getString("loc_inicial_arm"));
+                row.add(rs1.getString("pt_recol_nome"));
+                row.add(rs1.getString("loc_inicial_ponto"));
+                row.add(rs1.getString("pt_entr_nome"));
                 row.add(rs1.getString("loc_final"));
-
+                row.add(rs1.getString("data_env"));
+                row.add(rs1.getString("data_entr"));           
+          
                 table.add(row);                
             }
 
