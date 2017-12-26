@@ -457,7 +457,7 @@ public class Drone2uConsole extends ConsolePanel{
                 stateUavsFrame.setVisible(true);*/
                 painelInfoFrame = new JFrame();
                 painelInfoFrame.add(painelInfoPanel);
-                painelInfoFrame.setSize(1063, 671);
+                painelInfoFrame.setSize(1184, 688);
                 painelInfoFrame.setVisible(true);
                 painelInfoFrame.setResizable(false);
 

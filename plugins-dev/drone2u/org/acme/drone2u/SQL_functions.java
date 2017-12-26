@@ -519,6 +519,72 @@ public class SQL_functions {
             return null;
         }
     }
+    
+    /**
+     * Consulta na base de dados o numero de UAVs disponiveis 
+     * @return 
+     */    
+    public int getFreeUavs() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM drone WHERE disponibilidade = TRUE";
+        rs1 = execute(query);
+        try {  
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }    
+    
+    /**
+     * Consulta na base de dados o numero de UAVs ocupados
+     * @return 
+     */    
+    public int getBusyUavs() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM drone WHERE disponibilidade = FALSE";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
+    /**
+     * Consulta na base de dados o numero de UAVs em falha
+     * @return 
+     */    
+    public int getFailureUavs() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM drone WHERE falha = TRUE";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
 
 
     /**

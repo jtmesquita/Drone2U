@@ -41,6 +41,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYDataset;
+
 import pt.lsts.neptus.comm.manager.imc.ImcSystem;
 import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
 import pt.lsts.neptus.plugins.update.Periodic;
@@ -77,11 +89,10 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+
 public class PainelInfo extends JPanel {
-    private JTextField uavsLivresText;
-    private JTextField entregasCursoText;
-    private JTextField uavsOcupadosText;
-    private JTextField entregasPendentesText;
     private JTable tableEncomendas;
     private JTable tableEstadoUavs;
     private JTextField uavsOpText;
@@ -91,10 +102,15 @@ public class PainelInfo extends JPanel {
     private JTextField tempText;
     private JTextField humidadeText;
     private JTextField ventoText;
-    private JProgressBar progressBarOcupacao;
     private JComboBox<String> comboBoxFiltroUav;
     private SQL_functions database;
     private JTextField weatherDescriptionText;
+    private JTextField uavsLivresText;
+    private JTextField uavsOcupadosText;
+    private JTextField entregasPendentesText;
+    private JTextField entregasCursoText;
+    private JProgressBar progressBarOcupacao;
+    private TimeSeries series;
 
     /**
      * Create the panel.
@@ -119,106 +135,6 @@ public class PainelInfo extends JPanel {
         lblPainelInfo.setBackground(Color.DARK_GRAY);
         lblPainelInfo.setOpaque(true);
         lblPainelInfo.setFont(new Font("Monospaced", Font.BOLD, 25));
-        
-        JPanel panelTaxaOcupacao = new JPanel();
-        panelTaxaOcupacao.setBackground(Color.GRAY);
-        
-        JLabel label = new JLabel("Taxa de ocupação");
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Monospaced", Font.PLAIN, 20));
-        
-        progressBarOcupacao = new JProgressBar();
-        progressBarOcupacao.setValue(90);
-        progressBarOcupacao.setToolTipText("");
-        progressBarOcupacao.setStringPainted(true);
-        progressBarOcupacao.setForeground(Color.RED);
-        progressBarOcupacao.setFont(new Font("Monospaced", Font.BOLD, 15));
-        progressBarOcupacao.setBackground(Color.GREEN);
-        
-        JLabel lblUavsLivres = new JLabel("UAVs livres");
-        lblUavsLivres.setForeground(Color.WHITE);
-        lblUavsLivres.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        uavsLivresText = new JTextField();
-        uavsLivresText.setBackground(Color.WHITE);
-        uavsLivresText.setEditable(false);
-        uavsLivresText.setColumns(10);
-        
-        JLabel lblUavsOcupados = new JLabel("UAVs ocupados");
-        lblUavsOcupados.setForeground(Color.WHITE);
-        lblUavsOcupados.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        entregasCursoText = new JTextField();
-        entregasCursoText.setEditable(false);
-        entregasCursoText.setColumns(10);
-        
-        JLabel lblEntregasCurso = new JLabel("Entregas em curso");
-        lblEntregasCurso.setForeground(Color.WHITE);
-        lblEntregasCurso.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        uavsOcupadosText = new JTextField();
-        uavsOcupadosText.setEditable(false);
-        uavsOcupadosText.setColumns(10);
-        
-        JLabel lblEntregasPendentes = new JLabel("Entregas pendentes");
-        lblEntregasPendentes.setForeground(Color.WHITE);
-        lblEntregasPendentes.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        
-        entregasPendentesText = new JTextField();
-        entregasPendentesText.setEditable(false);
-        entregasPendentesText.setColumns(10);
-        GroupLayout gl_panelTaxaOcupacao = new GroupLayout(panelTaxaOcupacao);
-        gl_panelTaxaOcupacao.setHorizontalGroup(
-            gl_panelTaxaOcupacao.createParallelGroup(Alignment.LEADING)
-                .addGroup(gl_panelTaxaOcupacao.createSequentialGroup()
-                    .addGap(24)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.LEADING)
-                        .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
-                        .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.LEADING, false)
-                            .addComponent(lblEntregasCurso, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblEntregasPendentes))
-                        .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(ComponentPlacement.UNRELATED)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.LEADING)
-                        .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.TRAILING)
-                            .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(entregasPendentesText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
-                        .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
-                    .addGap(29))
-                .addGroup(gl_panelTaxaOcupacao.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 261, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(20, Short.MAX_VALUE))
-                .addComponent(label, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-        );
-        gl_panelTaxaOcupacao.setVerticalGroup(
-            gl_panelTaxaOcupacao.createParallelGroup(Alignment.TRAILING)
-                .addGroup(gl_panelTaxaOcupacao.createSequentialGroup()
-                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(label, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(6)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(6)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblEntregasCurso, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(6)
-                    .addGroup(gl_panelTaxaOcupacao.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblEntregasPendentes, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(entregasPendentesText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGap(25))
-        );
-        panelTaxaOcupacao.setLayout(gl_panelTaxaOcupacao);
         
         JPanel panelEncomendas = new JPanel();
         panelEncomendas.setBackground(Color.GRAY);
@@ -329,6 +245,8 @@ public class PainelInfo extends JPanel {
                     .addGap(25))
         );
         panelFalhas.setLayout(gl_panelFalhas);
+        
+        JPanel panel = new JPanel();
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
             groupLayout.createParallelGroup(Alignment.LEADING)
@@ -336,19 +254,19 @@ public class PainelInfo extends JPanel {
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 956, Short.MAX_VALUE)
+                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 1075, Short.MAX_VALUE)
                             .addGap(12)
                             .addComponent(drone2uLogo))
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-                                .addComponent(panelFalhas, 0, 0, Short.MAX_VALUE)
-                                .addComponent(panelCondMeteo, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+                            .addComponent(panel, GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(panelEstadoUavs, GroupLayout.PREFERRED_SIZE, 771, GroupLayout.PREFERRED_SIZE))
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(panelTaxaOcupacao, GroupLayout.PREFERRED_SIZE, 285, GroupLayout.PREFERRED_SIZE)
+                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                                .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 292, GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 748, Short.MAX_VALUE)))
+                            .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 859, Short.MAX_VALUE)))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -360,17 +278,170 @@ public class PainelInfo extends JPanel {
                         .addComponent(lblPainelInfo, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(panelTaxaOcupacao, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(panelEstadoUavs, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
                             .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 158, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
-                        .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addContainerGap(123, Short.MAX_VALUE))
+                        .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
+                    .addContainerGap(13, Short.MAX_VALUE))
         );
+        panel.setLayout(new CardLayout(0, 0));
+        
+        JPanel panelOcupacao = new JPanel();
+        panelOcupacao.setBackground(Color.GRAY);
+        panel.add(panelOcupacao, "panel1");
+        
+        JLabel lblUavsLivres = new JLabel("UAVs livres");
+        lblUavsLivres.setForeground(Color.WHITE);
+        lblUavsLivres.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        
+        JLabel label_1 = new JLabel("Entregas em curso");
+        label_1.setForeground(Color.WHITE);
+        label_1.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        
+        JLabel lblEntregasPendentes = new JLabel("Entregas pendentes");
+        lblEntregasPendentes.setForeground(Color.WHITE);
+        lblEntregasPendentes.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        
+        JLabel lblUavsOcupados = new JLabel("UAVs ocupados");
+        lblUavsOcupados.setForeground(Color.WHITE);
+        lblUavsOcupados.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        
+        uavsLivresText = new JTextField();
+        uavsLivresText.setEditable(false);
+        uavsLivresText.setColumns(10);
+        uavsLivresText.setBackground(Color.WHITE);
+        
+        uavsOcupadosText = new JTextField();
+        uavsOcupadosText.setEditable(false);
+        uavsOcupadosText.setColumns(10);
+        
+        entregasPendentesText = new JTextField();
+        entregasPendentesText.setEditable(false);
+        entregasPendentesText.setColumns(10);
+        
+        entregasCursoText = new JTextField();
+        entregasCursoText.setEditable(false);
+        entregasCursoText.setColumns(10);
+        
+        progressBarOcupacao = new JProgressBar();
+        progressBarOcupacao.setValue(100);
+        progressBarOcupacao.setToolTipText("");
+        progressBarOcupacao.setStringPainted(true);
+        progressBarOcupacao.setForeground(Color.RED);
+        progressBarOcupacao.setFont(new Font("Monospaced", Font.BOLD, 15));
+        progressBarOcupacao.setBackground(Color.GREEN);
+        
+        JLabel lblOcupacao = new JLabel("Ocupação");
+        lblOcupacao.setHorizontalAlignment(SwingConstants.CENTER);
+        lblOcupacao.setForeground(Color.WHITE);
+        lblOcupacao.setFont(new Font("Monospaced", Font.PLAIN, 20));
+        
+        JButton button = new JButton("Plot");
+
+        GroupLayout gl_panelOcupacao = new GroupLayout(panelOcupacao);
+        gl_panelOcupacao.setHorizontalGroup(
+            gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_panelOcupacao.createSequentialGroup()
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_panelOcupacao.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(progressBarOcupacao, GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))
+                        .addGroup(gl_panelOcupacao.createSequentialGroup()
+                            .addGap(70)
+                            .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                                .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
+                                .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING, false)
+                                    .addComponent(label_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(lblEntregasPendentes))
+                                .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(ComponentPlacement.UNRELATED)
+                            .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                                .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.TRAILING)
+                                    .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(entregasPendentesText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))))
+                    .addContainerGap())
+                .addGroup(Alignment.TRAILING, gl_panelOcupacao.createSequentialGroup()
+                    .addContainerGap(98, Short.MAX_VALUE)
+                    .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.UNRELATED)
+                    .addComponent(button)
+                    .addGap(97))
+        );
+        gl_panelOcupacao.setVerticalGroup(
+            gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_panelOcupacao.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(button)
+                        .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGap(6)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGap(6)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(label_1, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGap(6)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblEntregasPendentes, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(entregasPendentesText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(26, Short.MAX_VALUE))
+        );
+        panelOcupacao.setLayout(gl_panelOcupacao);
+        
+        JPanel panel_2 = new JPanel();
+        panel_2.setBackground(Color.GRAY);
+        panel.add(panel_2, "panel2");
+        
+        JLabel label = new JLabel("Ocupação");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Monospaced", Font.PLAIN, 20));
+        
+        JButton button_1 = new JButton("Plot");
+        
+        JPanel chartp = new JPanel();
+        GroupLayout gl_panel_2 = new GroupLayout(panel_2);
+        gl_panel_2.setHorizontalGroup(
+            gl_panel_2.createParallelGroup(Alignment.TRAILING)
+                .addGroup(gl_panel_2.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_panel_2.createSequentialGroup()
+                            .addComponent(label, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                            .addComponent(button_1, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
+                            .addGap(43))
+                        .addGroup(gl_panel_2.createSequentialGroup()
+                            .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addContainerGap())))
+        );
+        gl_panel_2.setVerticalGroup(
+            gl_panel_2.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_panel_2.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(label, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(button_1))
+                    .addGap(7)
+                    .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                    .addContainerGap())
+        );
+        panel_2.setLayout(gl_panel_2);
         
         JLabel lblCondiesMet = new JLabel("Condições meteo.");
         lblCondiesMet.setHorizontalAlignment(SwingConstants.CENTER);
@@ -575,9 +646,49 @@ public class PainelInfo extends JPanel {
         scrollPaneEncomendas.setViewportView(tableEncomendas);
         panelEncomendas.setLayout(gl_panelEncomendas);
         setLayout(groupLayout);
-    
-    
-
+        
+        series = new TimeSeries("Random Data", Millisecond.class);
+        final TimeSeriesCollection dataset = new TimeSeriesCollection(series);        
+       
+        final JFreeChart result = ChartFactory.createTimeSeriesChart(
+            null, 
+            null, 
+            null,
+            dataset, 
+            false, 
+            false, 
+            false
+        );
+        final XYPlot plot = result.getXYPlot();
+        ValueAxis axis = plot.getDomainAxis();
+        axis.setAutoRange(true);
+        axis.setFixedAutoRange(60000.0);  // 60 seconds
+        axis = plot.getRangeAxis();
+        axis.setRange(0.0, 100.0);      
+        
+        ChartPanel chartPanel = new ChartPanel( result );
+        chartPanel.setPreferredSize( new java.awt.Dimension( 200 , 200 ) ); 
+        
+        
+        
+        
+        chartp.setLayout(new java.awt.BorderLayout());
+         
+        chartp.add(chartPanel,BorderLayout.CENTER);
+        chartp.validate();
+        
+        
+        
+        
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                CardLayout cardLayout = (CardLayout) panel.getLayout();
+                cardLayout.show(panel, "panel2");
+                System.out.println("oiiiiiiiii");
+                
+                
+            }
+        });
     
     
         comboBoxFiltroUav.addActionListener (new ActionListener () {
@@ -700,11 +811,20 @@ public class PainelInfo extends JPanel {
     /**
      * Atualizar os restantes componentes da GUI (barras de utilização e textos)
      */
-    public void refreshOther () {
+    public void refreshOther () {        
+        // chamada da função para conetar à base de dados
+        if(!database.isConnected()) {
+            Connection conn = database.connect();
+            database.setSchema();       
+        }
         
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
         float inactive_vehicles = 0;
-        float active_vehicles = 0;    
+        float active_vehicles = 0;
+        
+        inactive_vehicles = database.getFreeUavs();
+        active_vehicles = database.getBusyUavs();
+        
                 
         uavsLivresText.setText(String.valueOf(vehicles_list.length));
         
@@ -713,15 +833,16 @@ public class PainelInfo extends JPanel {
                 inactive_vehicles++;
             else
                 active_vehicles++;
-        }        
-        uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
-        uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
+        }       
+      //  uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
+      //  uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
         
         if(active_vehicles+inactive_vehicles == 0)
             progressBarOcupacao.setValue(100);
         else
             progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
-
+        
+        series.add(new Millisecond(), (active_vehicles/(active_vehicles+inactive_vehicles)*100));
     }
     
     
