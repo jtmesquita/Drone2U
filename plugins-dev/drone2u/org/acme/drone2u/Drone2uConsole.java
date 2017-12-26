@@ -138,10 +138,16 @@ public class Drone2uConsole extends ConsolePanel{
         return manType + i;
     }
 
-    public PlanControl buildPlan (String vehicleID, MissionType mt, LocationType [] destArray, double speed, double height) {
+    public PlanControl buildPlan (String vehicleID, int OrderId , MissionType mt, LocationType [] destArray, double speed, double height) {
 
         PlanType neptusPlan = new PlanType(mt);
         neptusPlan.addVehicle(vehicleID);
+
+        if(OrderId != -1) {
+            neptusPlan.setId("Order:"+OrderId);
+        }
+        else
+            neptusPlan.setId("Return2WH");
 
         int aux = 0;
 
@@ -527,7 +533,7 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[0] = warehouse;
                 destArray[1] = final_location;
 
-                PlanControl pc = buildPlan("x8-02", getConsole().getMission(),destArray, vel, height);
+                PlanControl pc = buildPlan("x8-02", id, getConsole().getMission(),destArray, vel, height);
 
                 System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
             }
@@ -538,15 +544,23 @@ public class Drone2uConsole extends ConsolePanel{
 
     /**
      * Função que verifica as condições meteorológicas
+     * @return weather_info[temperature, wind_veloc., weather_id]
      */
-    @Periodic(millisBetweenUpdates=1000*60) // a cada 60segundos é chamada a função
-    public void check_weather() {
+    //@Periodic(millisBetweenUpdates=1000*60) // a cada 60segundos é chamada a função
+    public double[] check_weather() {
 
         Vector<Map<String, Object>> content = new Vector<>();
+        double[] weather_info = new double[3];
 
         content = data.getWeatherData();
 
         String[] weather_description = content.get(2).get("weather").toString().split(",");
+        double weather_id;
+
+        String[] aux;
+        aux = weather_description[0].split("=");
+        weather_id = Double.parseDouble(aux[1]);
+
         weather_description = weather_description[2].split("=");
 
         double temperature = Double.parseDouble(content.get(0).get("temp").toString());
@@ -562,8 +576,13 @@ public class Drone2uConsole extends ConsolePanel{
         System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
         System.out.println("    Descrição: "+weather_description[1]);
 
+        weather_info[0] =temperature;
+        weather_info[1] =wind_velocity;
+        weather_info[2] =weather_id;
+
         painelInfoPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
 
+        return weather_info;
     }
 
     /**
@@ -697,7 +716,7 @@ public class Drone2uConsole extends ConsolePanel{
                     path = getPath(OrderId, "regresso");
 
                     // Envio o caminho para o drone
-                    PlanControl pc = buildPlan(event.getVehicle().toString(), getConsole().getMission(),path, vel, height);
+                    PlanControl pc = buildPlan(event.getVehicle().toString(), -1, getConsole().getMission(),path, vel, height);
                     System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
                 }
                 else if( database.getOrderState(OrderId).equals("entregue")) {
@@ -706,15 +725,15 @@ public class Drone2uConsole extends ConsolePanel{
                     // à última posição e retirar de lá o localização do armazém e manda fazer loiter
                     LocationType[] path;
                     LocationType whareHouse = new LocationType();
-                    
+
                     path = getPath(OrderId, "regresso");
-                    
+
                     whareHouse = path[path.length-1];
-                    
+
                     PlanControl pc = buildPlan_loiter(event.getVehicle().toString(), getConsole().getMission(),whareHouse, 10, 700, 25.0);
 
                     System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
-                    
+
                     // atualiza na base de dados a nova localização do drone
                     int UAV_id = database.getDroneId(event.getVehicle().toString());
                     database.InserUAVlocation(UAV_id, whareHouse);
@@ -749,21 +768,21 @@ public class Drone2uConsole extends ConsolePanel{
                 PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
 
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
-                
+
                 //atualiza localização na base de dados
                 int UAV_id = database.getDroneId(vehicles_list[i].getName().toString());
                 database.InserUAVlocation(UAV_id, armazem_loc);
 
                 //coloca a hora e data de inicio da entrega
-//                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-//                Date date = new Date();
-//
-//                String[] data_fim;
-//
-//                data_fim = dateFormat.format(date).split(" ");
-//
-//                System.out.println("hora: "+data_fim[1]);
-//                System.out.println("data: "+data_fim[0]);
+                //                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                //                Date date = new Date();
+                //
+                //                String[] data_fim;
+                //
+                //                data_fim = dateFormat.format(date).split(" ");
+                //
+                //                System.out.println("hora: "+data_fim[1]);
+                //                System.out.println("data: "+data_fim[0]);
             }
         }
     }
@@ -783,34 +802,26 @@ public class Drone2uConsole extends ConsolePanel{
         }
 
         // antes de enviar o drone verificar condições meteorológicas
+
+        double[] weather_info = check_weather();
+
+
         /*
+         * Temperatura entre -10graus e 50graus
          * 
+         * Após pesquisa ventos acima de 15mph -> 24Kpm não é aconselhavel voar
          * 
-         * 
-         * 
-         * 
+         * Voar em tempos de chuva, ou seja, grupo 5xx, não é bom para voar pois está a chover
          * 
          */
-        
-        /* Antes de enviar o drone verififar mesmo a disponibilidade dele
-         * 
-         * 
-         * 
-         * 
-         * 
-         * */
 
-        // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
-        int new_order_id = database.getId_last_order();
+        if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
+            System.out.println("Condições atmosféricas dentro dos limites");
+            Vector<Integer> Orders;
 
-        if( new_order_id> last_order_id) {
-            System.out.println("Nova encomenda na bd. ID= "+database.getId_last_order());
+            Orders = database.getNewOrders();
 
-            Vector<Integer> list_ids;
-
-            list_ids = database.get_order_IDs(last_order_id);
-
-            for(Integer id : list_ids) {
+            for(Integer id : Orders) {
                 System.out.println(id);
 
                 // ver o caminho que a entrega tem de fazer
@@ -818,36 +829,44 @@ public class Drone2uConsole extends ConsolePanel{
                 LocationType[] path;
 
                 drone = database.getDroneForOrder(id);
-                path = getPath(id, "entrega");
 
-                PlanControl pc = buildPlan(drone, getConsole().getMission(),path, vel, height);
 
-                System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
+                /* Antes de enviar o drone verififar mesmo a disponibilidade dele
+                 *
+                 * */
+                if (database.getUAVavailability(database.getDroneId(drone))) {
+                    path = getPath(id, "entrega");
 
-                //tenho de inserir na tabela entrega
+                    PlanControl pc = buildPlan(drone, id, getConsole().getMission(),path, vel, height);
 
-                int DroneId = database.getDroneId(drone);
+                    System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
 
-                database.InsertEntrega(id, DroneId, "TRUE");
+                    //tenho de inserir na tabela entrega
 
-                // atualiza data e hora de envio
+                    int DroneId = database.getDroneId(drone);
 
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
+                    database.InsertEntrega(id, DroneId, "TRUE");
 
-                String[] data_envio;
+                    // atualiza data e hora de envio
 
-                data_envio = dateFormat.format(date).split(" ");
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    Date date = new Date();
 
-                database.UpdateDateSend(id, data_envio);
+                    String[] data_envio;
 
-                // atualiza o estado da encomenda
-                database.OrderStateUpdate(id, "enviada");
+                    data_envio = dateFormat.format(date).split(" ");
+
+                    database.UpdateDateSend(id, data_envio);
+
+                    // atualiza o estado da encomenda
+                    database.OrderStateUpdate(id, "enviada");
+                }
+
             }
-
-            //os drones foram enviados
-            last_order_id = new_order_id;
         }
+        else
+            System.out.println("Condições atomosféricas adversas");
+        
     }
 
     /**
