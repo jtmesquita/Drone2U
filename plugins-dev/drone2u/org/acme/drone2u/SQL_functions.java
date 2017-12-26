@@ -312,8 +312,8 @@ public class SQL_functions {
             return null;
         }
     }
-    
-    
+
+
     /**
      * Atualiza o estado de uma encomenda (order_id) com o estado
      * "state"
@@ -336,7 +336,7 @@ public class SQL_functions {
         }    
 
     }
-    
+
     /**
      * Retorda o estado de uma encomenda
      * @param order_id
@@ -358,7 +358,7 @@ public class SQL_functions {
             return null;
         }
     }
-    
+
     /**
      * Atualiza na base de dados a disponibilidade do drone
      * @param UAV_name
@@ -477,6 +477,27 @@ public class SQL_functions {
     }
 
     /**
+     * Verifica qual a disponibilidade do drone
+     * @param DroneId
+     * @return true/false
+     */
+    public boolean getUAVavailability(int DroneId) {
+        ResultSet rsaux;
+        String query = "SELECT disponibilidade FROM drone WHERE id_d ="+DroneId;
+        
+        rsaux = execute(query);
+        
+        try {
+            rsaux.next();
+            return rsaux.getBoolean("disponibilidade");
+        }
+        catch (Exception e) {
+            System.err.println(e);
+            return false;
+        }
+    }
+    
+    /**
      * Insere na tabela entrega os dados respetivos
      * @param Order_id
      * @param DroneID
@@ -493,6 +514,31 @@ public class SQL_functions {
             System.err.println(e);
         }  
 
+    }
+
+    /**
+     * Função que retorna as encomendas que já foram processadas pelo algoritmo mas 
+     * ainda nao foram enviadas
+     * @return Vector<Integer> Orders
+     */
+    public Vector<Integer> getNewOrders() {
+        ResultSet rsaux;
+        String query = "SELECT id_wr FROM wprota WHERE id_wr NOT IN ( SELECT id_e FROM entrega) ORDER BY id_wr ASC";
+        Vector<Integer> Orders = new Vector<Integer>();
+        
+        rsaux = execute(query);
+        
+        try {
+            while (rsaux.next())
+            {
+                Orders.add(rsaux.getInt("id_wr"));
+            }
+            return Orders;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return null;
+        }
     }
 
     /**
@@ -599,22 +645,22 @@ public class SQL_functions {
 
 
         String query = "SELECT nome_drone, " +                               
-                            "encomenda.id_e," + 
-                            "armazem.nome as arm_nome, " + 
-                            "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
-                            "pt_recol.nome as pt_recol_nome, " + 
-                            "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
-                            "pt_entr.nome as pt_entr_nome, " + 
-                            "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
-                            "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
-                            "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
-                                "FROM entrega  " + 
-                                "LEFT JOIN encomenda USING(id_e) " + 
-                                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
-                                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
-                                "LEFT JOIN drone USING(id_d)";
-    
+                "encomenda.id_e," + 
+                "armazem.nome as arm_nome, " + 
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
+                "pt_recol.nome as pt_recol_nome, " + 
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
+                "pt_entr.nome as pt_entr_nome, " + 
+                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
+                "FROM entrega  " + 
+                "LEFT JOIN encomenda USING(id_e) " + 
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
+                "LEFT JOIN drone USING(id_d)";
+
         rs1 = execute(query);
         try {            
 
@@ -630,7 +676,7 @@ public class SQL_functions {
                 row.add(rs1.getString("loc_final"));
                 row.add(rs1.getString("data_env"));
                 row.add(rs1.getString("data_entr"));           
-          
+
                 table.add(row);                
             }
 
@@ -665,12 +711,12 @@ public class SQL_functions {
                 "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
                 "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
-                    "FROM entrega  " + 
-                    "LEFT JOIN encomenda USING(id_e) " + 
-                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
-                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
-                    "LEFT JOIN drone USING(id_d) " +        
+                "FROM entrega  " + 
+                "LEFT JOIN encomenda USING(id_e) " + 
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
+                "LEFT JOIN drone USING(id_d) " +        
                 "WHERE drone.nome_drone = '"+filter+"'";                            
 
         rs1 = execute(query);
@@ -688,7 +734,7 @@ public class SQL_functions {
                 row.add(rs1.getString("loc_final"));
                 row.add(rs1.getString("data_env"));
                 row.add(rs1.getString("data_entr"));           
-          
+
                 table.add(row);                
             }
 
