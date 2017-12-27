@@ -854,23 +854,30 @@ public class PainelInfo extends JPanel {
         }*/       
         uavsLivresText.setText(String.valueOf((int)freeUavs));
         uavsOcupadosText.setText(String.valueOf((int)busyUavs));
+        
         entregasPendentesText.setText(String.valueOf(pendingSend));
         entregasCursoText.setText(String.valueOf(pendingDelivery));
+        
         uavsOpText.setText(String.valueOf((int)operationalUavs));
         uavsFalhaText.setText(String.valueOf((int)failureUavs));
+        
         entregasSucessoText.setText(String.valueOf(successfulDeliveries));
-        entregasFalhaText.setText("0");        
+        entregasFalhaText.setText("0");
+        
+        System.out.println("busy = "+busyUavs);        
+        System.out.println("operational = "+operationalUavs);
+        
         
         
         if(busyUavs+freeUavs == 0)
             progressBarOcupacao.setValue(100);
         else
-            progressBarOcupacao.setValue((int)(busyUavs/(busyUavs+operationalUavs)*100));
+            progressBarOcupacao.setValue((int)(busyUavs/(busyUavs+freeUavs)*100));
         
-        if(failureUavs+freeUavs == 0)
+        if(failureUavs+operationalUavs == 0)
             progressBarFalhas.setValue(100);
         else
-            progressBarFalhas.setValue((int)(failureUavs/(failureUavs+freeUavs)*100));
+            progressBarFalhas.setValue((int)(failureUavs/(failureUavs+operationalUavs)*100));
         
         series.add(new Millisecond(), (busyUavs/(busyUavs+freeUavs)*100));
     }    
