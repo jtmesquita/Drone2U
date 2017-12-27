@@ -365,7 +365,16 @@ public class SQL_functions {
      * @param State
      */
     public void UAVstateUpdate(String UAV_name, String State){
-        String query = "UPDATE drone SET  disponibilidade = "+State+" WHERE nome_drone = '"+UAV_name+"'";
+        String query;
+
+        if(State.equals("TRUE")) {
+            query = "UPDATE drone SET  disponibilidade = "+State+", reservado= 'FALSE' WHERE nome_drone = '"+UAV_name+"'";
+        }
+        else {
+            query = "UPDATE drone SET  disponibilidade = "+State+" WHERE nome_drone = '"+UAV_name+"'";
+        }
+
+
 
         try {
             stmt = con.createStatement();            
@@ -484,9 +493,9 @@ public class SQL_functions {
     public boolean getUAVavailability(int DroneId) {
         ResultSet rsaux;
         String query = "SELECT disponibilidade FROM drone WHERE id_d ="+DroneId;
-        
+
         rsaux = execute(query);
-        
+
         try {
             rsaux.next();
             return rsaux.getBoolean("disponibilidade");
@@ -496,7 +505,7 @@ public class SQL_functions {
             return false;
         }
     }
-    
+
     /**
      * Insere na tabela entrega os dados respetivos
      * @param Order_id
@@ -525,9 +534,9 @@ public class SQL_functions {
         ResultSet rsaux;
         String query = "SELECT id_wr FROM wprota WHERE id_wr NOT IN ( SELECT id_e FROM entrega) ORDER BY id_wr ASC";
         Vector<Integer> Orders = new Vector<Integer>();
-        
+
         rsaux = execute(query);
-        
+
         try {
             while (rsaux.next())
             {
@@ -565,7 +574,7 @@ public class SQL_functions {
             return null;
         }
     }
-    
+
     /**
      * Consulta na base de dados o numero de UAVs disponiveis 
      * @return 
@@ -586,7 +595,7 @@ public class SQL_functions {
             return -1;
         }
     }    
-    
+
     /**
      * Consulta na base de dados o numero de UAVs ocupados
      * @return 
@@ -608,7 +617,7 @@ public class SQL_functions {
             return -1;
         }
     }
-    
+
     /**
      * Consulta na base de dados o numero de UAVs em falha
      * @return 
@@ -630,7 +639,7 @@ public class SQL_functions {
             return -1;
         }
     }
-    
+
 
 
     /**

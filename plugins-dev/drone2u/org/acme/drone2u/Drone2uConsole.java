@@ -277,6 +277,8 @@ public class Drone2uConsole extends ConsolePanel{
 
         PlanType neptusPlan = new PlanType(mt);
         neptusPlan.addVehicle(vehicleID);
+        
+        neptusPlan.setId("Loiter");
 
         loc.convertToAbsoluteLatLonDepth();
 
@@ -605,29 +607,51 @@ public class Drone2uConsole extends ConsolePanel{
             path_fromBD = database.getPathToWhareHouse(order_id);
         }
 
-
+        
         latitudes = path_fromBD[1].split(";");
         longitudes = path_fromBD[0].split(";");
+        
+        if(!latitudes[0].equals("-")) {
+            size = latitudes.length;
 
-        size = latitudes.length;
-
-        //        for(int i=0; i<size; i++) {
-        //            System.out.println("latidute"+i+": "+latitudes[i]);
-        //            System.out.println("longitude"+i+": "+longitudes[i]);
-        //        }
+            //        for(int i=0; i<size; i++) {
+            //            System.out.println("latidute"+i+": "+latitudes[i]);
+            //            System.out.println("longitude"+i+": "+longitudes[i]);
+            //        }
 
 
-        LocationType[] path = new LocationType[size];
+            LocationType[] path = new LocationType[size];
 
-        for(int i=0; i<size; i++) {
-            path[i] = new LocationType();
+            for(int i=0; i<size; i++) {
+                path[i] = new LocationType();
 
-            path[i].setLatitudeStr(latitudes[i]);;
-            path[i].setLongitudeStr(longitudes[i]);
+                path[i].setLatitudeStr(latitudes[i]);;
+                path[i].setLongitudeStr(longitudes[i]);
+            }
+
+            // path contém a trajetória a fazer pelo drone
+            return path;
+        }
+        else {
+            System.out.println("é para fazer loiter ao armazem - nao volta para tras");
+            path_fromBD = database.getPathForOrder(order_id);
+            
+            latitudes = path_fromBD[1].split(";");
+            longitudes = path_fromBD[0].split(";");
+            
+            size = latitudes.length;
+            
+            LocationType[] path = new LocationType[1];
+            
+            path[0] = new LocationType();
+
+            path[0].setLatitudeStr(latitudes[size-1]);;
+            path[0].setLongitudeStr(longitudes[size-1]);
+            
+            return path;
         }
 
-        // path contém a trajetória a fazer pelo drone
-        return path;
+        
     }
 
     /**
@@ -745,9 +769,29 @@ public class Drone2uConsole extends ConsolePanel{
 
 
     @Periodic(millisBetweenUpdates=1000*5) // a cada 5segundos é chamada a função
-    public void LoiterNewVehicle() {
+    public void checkVehicles() {
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
+        // significa que algum UAV deixou de estar em serviço
+        if(vehicles_list.length < UAV_map.size())
+        {
+            Vector<String> aux = new Vector<>();
+            
+            for(int i=0; i<vehicles_list.length; i++) {
+                aux.add(vehicles_list[i].getName());
+            }
+            
+            for(String uav_name: UAV_map) {
+                if(aux.indexOf(uav_name)== -1) {
+                    // significa que deixou de estar em serviço
+                    database.UAVstateUpdate(uav_name, "FALSE");
+                }
+                
+            }
+           
+        }
+        
+        // faz loiter a um novo veículo
         for(int i=0; i<vehicles_list.length; i++) {
             if( UAV_map.indexOf(vehicles_list[i].getName()) == -1) {
                 System.out.println("Ainda nao contém o UAV: "+vehicles_list[i].getName());
@@ -792,7 +836,7 @@ public class Drone2uConsole extends ConsolePanel{
      * Função que verifica se alguma encomenda está pronta para ser 
      * enviada
      */
-    //@Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
     public void check_new_Orders() {
 
         // chamada da função para conetar à base de dados
@@ -815,7 +859,7 @@ public class Drone2uConsole extends ConsolePanel{
          * 
          */
 
-        if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
+//        if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
             System.out.println("Condições atmosféricas dentro dos limites");
             Vector<Integer> Orders;
 
@@ -861,11 +905,13 @@ public class Drone2uConsole extends ConsolePanel{
                     // atualiza o estado da encomenda
                     database.OrderStateUpdate(id, "enviada");
                 }
+                else
+                    System.out.println(drone+" não está disponivel");
 
             }
-        }
-        else
-            System.out.println("Condições atomosféricas adversas");
+//        }
+//        else
+//            System.out.println("Condições atomosféricas adversas");
         
     }
 
@@ -888,4 +934,8 @@ public class Drone2uConsole extends ConsolePanel{
 
     }
 
+//    @Subscribe
+//    public void on2(ConsoleEventVehicleStateChanged event) {
+//        System.out.println(event.getState().toString());
+//    }
 }
