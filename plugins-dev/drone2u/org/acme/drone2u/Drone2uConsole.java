@@ -463,7 +463,7 @@ public class Drone2uConsole extends ConsolePanel{
                 stateUavsFrame.setVisible(true);*/
                 painelInfoFrame = new JFrame();
                 painelInfoFrame.add(painelInfoPanel);
-                painelInfoFrame.setSize(1184, 688);
+                painelInfoFrame.setSize(1184, 700);
                 painelInfoFrame.setVisible(true);
                 painelInfoFrame.setResizable(false);
 
@@ -486,6 +486,7 @@ public class Drone2uConsole extends ConsolePanel{
         painelInfoPanel.refreshTableEstadoUavs();
         painelInfoPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
         painelInfoPanel.refreshOther();
+        painelInfoPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
     }
 
     /**
@@ -580,7 +581,7 @@ public class Drone2uConsole extends ConsolePanel{
         weather_info[1] =wind_velocity;
         weather_info[2] =weather_id;
 
-        painelInfoPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
+        
 
         return weather_info;
     }

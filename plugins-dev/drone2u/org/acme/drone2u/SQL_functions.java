@@ -609,6 +609,95 @@ public class SQL_functions {
         }
     }
     
+   
+    /**
+     * Consulta na base de dados o numero de encomendas pendentes de envio (data de envio = NULL)
+     * @return 
+     */    
+    public int getPendingSend() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NULL";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
+    /**
+     * Consulta na base de dados o numero de encomendas pendentes de entrega (data de envio != NULL AND data de entrega = NULL)
+     * @return 
+     */    
+    public int getPendingDelivery() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NOT NULL AND data_entr IS NULL";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
+    /**
+     * Consulta na base de dados o numero de entregas com sucesso (data_env != NULL AND data_entr != NULL)
+     * @return 
+     */    
+    public int getSuccessfulDeliveries() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NOT NULL AND data_entr IS NOT NULL";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
+    /**
+     * Consulta na base de dados o numero de UAVs operacionais
+     * @return 
+     */    
+    public int getOperationalUavs() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM drone WHERE falha = FALSE";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
     /**
      * Consulta na base de dados o numero de UAVs em falha
      * @return 
@@ -631,6 +720,32 @@ public class SQL_functions {
         }
     }
     
+    
+    /**
+     * Consulta na base de dados o numero total de UAVs
+     * @return 
+     */    
+    public int getTotalUavs() {    
+
+        ResultSet rs1;      
+
+        String query = "SELECT COUNT(*) FROM drone";
+        rs1 = execute(query);
+        try {            
+
+            rs1.next();
+            String res = rs1.getString("count");            
+            return Integer.parseInt(res);              
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+    
+
+    
+    
 
 
     /**
@@ -644,7 +759,7 @@ public class SQL_functions {
         ResultSet rs1;    
 
 
-        String query = "SELECT nome_drone, " +                               
+        /*String query = "SELECT nome_drone, " +                               
                 "encomenda.id_e," + 
                 "armazem.nome as arm_nome, " + 
                 "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
@@ -659,7 +774,25 @@ public class SQL_functions {
                 "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
                 "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
                 "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
-                "LEFT JOIN drone USING(id_d)";
+                "LEFT JOIN drone USING(id_d)";*/
+        
+        String query = "SELECT nome_drone, " +                               
+                "encomenda.id_e," + 
+                "armazem.nome as arm_nome, " + 
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
+                "pt_recol.nome as pt_recol_nome, " + 
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
+                "pt_entr.nome as pt_entr_nome, " + 
+                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
+                "FROM wprota  " + 
+                "LEFT JOIN encomenda ON wprota.id_wr = id_e " + 
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
+                "LEFT JOIN drone USING(id_d) " +
+                "ORDER BY id_e DESC";
 
         rs1 = execute(query);
         try {            
@@ -711,13 +844,14 @@ public class SQL_functions {
                 "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
                 "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
-                "FROM entrega  " + 
-                "LEFT JOIN encomenda USING(id_e) " + 
+                "FROM wprota  " + 
+                "LEFT JOIN encomenda ON wprota.id_wr = id_e " + 
                 "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
                 "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
                 "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
                 "LEFT JOIN drone USING(id_d) " +        
-                "WHERE drone.nome_drone = '"+filter+"'";                            
+                "WHERE drone.nome_drone = '"+filter+"' " +
+                "ORDER BY id_e DESC";
 
         rs1 = execute(query);
         try {            
