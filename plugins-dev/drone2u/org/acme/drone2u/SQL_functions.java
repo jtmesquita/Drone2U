@@ -59,7 +59,7 @@ public class SQL_functions {
     Statement stmt;
     ResultSet rs;
 
-    public Connection connect() {    
+    public Connection connect() {
 
         try {
             con = DriverManager.getConnection(url, user, password);
@@ -77,7 +77,7 @@ public class SQL_functions {
      * Verifica se já foi estabelecida uma conexão a base de dados
      * @return <code>true</code> caso já existe uma conexão estabelecida;
      * <code>false</code> caso contrário
-     */    
+     */
     public boolean isConnected(){
         if(con == null) return false;
         try{
@@ -85,39 +85,39 @@ public class SQL_functions {
         } catch (SQLException e){
             return false;
         }
-    }  
+    }
 
     /**
      * Executa uma consulta diretamente na base de dados
-     * @return <code>ResultSet</code> Retorna o resultado da consulta a base de dados. 
-     */   
+     * @return <code>ResultSet</code> Retorna o resultado da consulta a base de dados.
+     */
     private ResultSet execute(String query) {
         try {
             stmt = con.createStatement();
-            rs = stmt.executeQuery(query);            
+            rs = stmt.executeQuery(query);
         } catch (SQLException e) {
             System.err.println(e);
-        }        
+        }
         return rs;
     }
 
 
     /**
-     * Coloca o schema respetivo ao Drone2U na BD 
-     */   
+     * Coloca o schema respetivo ao Drone2U na BD
+     */
     public void setSchema(){
         String query = "SET search_path TO ola";
 
-        execute(query);       
+        execute(query);
     }
 
     /**
-     * Apenas para testar ir buscar pontos (ainda sem nenhum propósito especifico) 
+     * Apenas para testar ir buscar pontos (ainda sem nenhum propósito especifico)
      */
     public void getPoints() {
         ResultSet rsaux;
 
-        String query = "SELECT localizacao,latitude, longitude\n" + 
+        String query = "SELECT localizacao,latitude, longitude\n" +
                 "FROM waypoint";
 
         rsaux = execute(query);
@@ -229,7 +229,7 @@ public class SQL_functions {
         catch (Exception e){
             System.err.println(e);
             return null;
-        } 
+        }
     }
 
     /**
@@ -239,23 +239,23 @@ public class SQL_functions {
      */
     public void InserUAVlocation(int UAV_id, LocationType loc) {
         String latitude = String.valueOf(loc.getLatitudeDegs());
-        String longitude = String.valueOf(loc.getLongitudeDegs()); 
+        String longitude = String.valueOf(loc.getLongitudeDegs());
 
         String query = "UPDATE drone SET  longitude = '" + longitude + "', latitude = '"+latitude+"' WHERE id_d = "+UAV_id;
 
         try {
-            stmt = con.createStatement();            
-            stmt.executeUpdate(query);         
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
 
         } catch (SQLException e) {
             System.err.println(e);
-        }    
+        }
     }
 
     /**
      * Função que retorna a informação na base de dados relativamente
      * a um caminho para uma dada encomenda
-     * 
+     *
      * @param order_id
      * @return String path[longitude, latitude]
      */
@@ -285,7 +285,7 @@ public class SQL_functions {
 
     /**
      * Retorna o caminho para o aramzém que o drone tem de seguir após
-     * finalizar uma entrega 
+     * finalizar uma entrega
      * @param order_id
      * @return path[]
      */
@@ -326,14 +326,14 @@ public class SQL_functions {
         String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_e = "+order_id;
 
         try {
-            stmt = con.createStatement();            
+            stmt = con.createStatement();
             stmt.executeUpdate(query);
             return 1;
 
         } catch (SQLException e) {
             System.err.println(e);
             return 0;
-        }    
+        }
 
     }
 
@@ -377,12 +377,12 @@ public class SQL_functions {
 
 
         try {
-            stmt = con.createStatement();            
+            stmt = con.createStatement();
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
             System.err.println(e);
-        }    
+        }
     }
 
     /**
@@ -395,12 +395,12 @@ public class SQL_functions {
         String query = "UPDATE encomenda SET  data_env = '"+data_hora[0]+"', hora_env = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
 
         try {
-            stmt = con.createStatement();            
+            stmt = con.createStatement();
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
             System.err.println(e);
-        }  
+        }
 
     }
 
@@ -409,12 +409,12 @@ public class SQL_functions {
         String query = "UPDATE encomenda SET  data_entr = '"+data_hora[0]+"', hora_entr = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
 
         try {
-            stmt = con.createStatement();            
+            stmt = con.createStatement();
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
             System.err.println(e);
-        }  
+        }
 
     }
 
@@ -516,17 +516,17 @@ public class SQL_functions {
         String query = "INSERT INTO entrega (id_d, id_e, cond_meteo) VALUES("+DroneID+", "+Order_id+",'"+meteo+"')";
 
         try {
-            stmt = con.createStatement();            
+            stmt = con.createStatement();
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
             System.err.println(e);
-        }  
+        }
 
     }
 
     /**
-     * Função que retorna as encomendas que já foram processadas pelo algoritmo mas 
+     * Função que retorna as encomendas que já foram processadas pelo algoritmo mas
      * ainda nao foram enviadas
      * @return Vector<Integer> Orders
      */
@@ -553,21 +553,21 @@ public class SQL_functions {
     /**
      * Consulta na base de dados o nome dos UAVs
      * @return uma ArrayList com o nome dos UAVs
-     */    
-    public ArrayList<String> getUavsNames() {    
+     */
+    public ArrayList<String> getUavsNames() {
 
-        ResultSet rs1;    
-        ArrayList<String> names = new ArrayList<String>();   
+        ResultSet rs1;
+        ArrayList<String> names = new ArrayList<String>();
 
         String query = "SELECT DISTINCT nome_drone FROM drone";
         rs1 = execute(query);
-        try {            
+        try {
 
             while(rs1.next()) {
                 names.add(rs1.getString("nome_drone"));
             }
 
-            return names;            
+            return names;
         }
         catch (Exception e){
             System.err.println(e);
@@ -576,41 +576,130 @@ public class SQL_functions {
     }
 
     /**
-     * Consulta na base de dados o numero de UAVs disponiveis 
-     * @return 
-     */    
-    public int getFreeUavs() {    
+     * Consulta na base de dados o numero de UAVs disponiveis
+     * @return
+     */
+    public int getFreeUavs() {
 
-        ResultSet rs1;      
+        ResultSet rs1;
 
         String query = "SELECT COUNT(*) FROM drone WHERE disponibilidade = TRUE";
         rs1 = execute(query);
-        try {  
+        try {
             rs1.next();
-            String res = rs1.getString("count");            
-            return Integer.parseInt(res);              
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
         }
         catch (Exception e){
             System.err.println(e);
             return -1;
         }
-    }    
+    }
 
     /**
      * Consulta na base de dados o numero de UAVs ocupados
-     * @return 
-     */    
-    public int getBusyUavs() {    
+     * @return
+     */
+    public int getBusyUavs() {
 
-        ResultSet rs1;      
+        ResultSet rs1;
 
         String query = "SELECT COUNT(*) FROM drone WHERE disponibilidade = FALSE";
         rs1 = execute(query);
-        try {            
+        try {
 
             rs1.next();
-            String res = rs1.getString("count");            
-            return Integer.parseInt(res);              
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+
+    /**
+     * Consulta na base de dados o numero de encomendas pendentes de envio (data de envio = NULL)
+     * @return
+     */
+    public int getPendingSend() {
+
+        ResultSet rs1;
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NULL";
+        rs1 = execute(query);
+        try {
+
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+    /**
+     * Consulta na base de dados o numero de encomendas pendentes de entrega (data de envio != NULL AND data de entrega = NULL)
+     * @return
+     */
+    public int getPendingDelivery() {
+
+        ResultSet rs1;
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NOT NULL AND data_entr IS NULL";
+        rs1 = execute(query);
+        try {
+
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+    /**
+     * Consulta na base de dados o numero de entregas com sucesso (data_env != NULL AND data_entr != NULL)
+     * @return
+     */
+    public int getSuccessfulDeliveries() {
+
+        ResultSet rs1;
+
+        String query = "SELECT COUNT(*) FROM encomenda WHERE data_env IS NOT NULL AND data_entr IS NOT NULL";
+        rs1 = execute(query);
+        try {
+
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+    /**
+     * Consulta na base de dados o numero de UAVs operacionais
+     * @return
+     */
+    public int getOperationalUavs() {
+
+        ResultSet rs1;
+
+        String query = "SELECT COUNT(*) FROM drone WHERE falha = FALSE";
+        rs1 = execute(query);
+        try {
+
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
         }
         catch (Exception e){
             System.err.println(e);
@@ -620,19 +709,42 @@ public class SQL_functions {
 
     /**
      * Consulta na base de dados o numero de UAVs em falha
-     * @return 
-     */    
-    public int getFailureUavs() {    
+     * @return
+     */
+    public int getFailureUavs() {
 
-        ResultSet rs1;      
+        ResultSet rs1;
 
         String query = "SELECT COUNT(*) FROM drone WHERE falha = TRUE";
         rs1 = execute(query);
-        try {            
+        try {
 
             rs1.next();
-            String res = rs1.getString("count");            
-            return Integer.parseInt(res);              
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return -1;
+        }
+    }
+
+
+    /**
+     * Consulta na base de dados o numero total de UAVs
+     * @return
+     */
+    public int getTotalUavs() {
+
+        ResultSet rs1;
+
+        String query = "SELECT COUNT(*) FROM drone";
+        rs1 = execute(query);
+        try {
+
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
         }
         catch (Exception e){
             System.err.println(e);
@@ -642,39 +754,60 @@ public class SQL_functions {
 
 
 
+
+
+
     /**
      * Consulta de informação relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
-     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
-     */ 
-    public ArrayList<ArrayList<String>> getEncomendas() {     
+     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada
+     */
+    public ArrayList<ArrayList<String>> getEncomendas() {
 
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
 
-        ResultSet rs1;    
+        ResultSet rs1;
 
 
-        String query = "SELECT nome_drone, " +                               
-                "encomenda.id_e," + 
-                "armazem.nome as arm_nome, " + 
-                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
-                "pt_recol.nome as pt_recol_nome, " + 
-                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
-                "pt_entr.nome as pt_entr_nome, " + 
+        /*String query = "SELECT nome_drone, " +
+                "encomenda.id_e," +
+                "armazem.nome as arm_nome, " +
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
+                "pt_recol.nome as pt_recol_nome, " +
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
+                "pt_entr.nome as pt_entr_nome, " +
                 "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
-                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
-                "FROM entrega  " + 
-                "LEFT JOIN encomenda USING(id_e) " + 
-                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
-                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
-                "LEFT JOIN drone USING(id_d)";
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
+                "FROM entrega  " +
+                "LEFT JOIN encomenda USING(id_e) " +
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                "LEFT JOIN drone USING(id_d)";*/
+
+        String query = "SELECT nome_drone, " +
+                "encomenda.id_e," +
+                "armazem.nome as arm_nome, " +
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
+                "pt_recol.nome as pt_recol_nome, " +
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
+                "pt_entr.nome as pt_entr_nome, " +
+                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
+                "FROM wprota  " +
+                "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                "LEFT JOIN drone USING(id_d) " +
+                "ORDER BY id_e DESC";
 
         rs1 = execute(query);
-        try {            
+        try {
 
             while(rs1.next()) {
-                ArrayList<String> row = new ArrayList<String>();                
+                ArrayList<String> row = new ArrayList<String>();
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("arm_nome"));
@@ -684,55 +817,56 @@ public class SQL_functions {
                 row.add(rs1.getString("pt_entr_nome"));
                 row.add(rs1.getString("loc_final"));
                 row.add(rs1.getString("data_env"));
-                row.add(rs1.getString("data_entr"));           
+                row.add(rs1.getString("data_entr"));
 
-                table.add(row);                
+                table.add(row);
             }
 
-            return table;            
+            return table;
         }
         catch (Exception e){
             System.err.println(e);
             return null;
-        }       
+        }
     }
 
 
 
     /**
      * Consulta de informação (filtrada) relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
-     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada 
-     */ 
-    public ArrayList<ArrayList<String>> getEncomendas(String filter) {     
+     * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada
+     */
+    public ArrayList<ArrayList<String>> getEncomendas(String filter) {
 
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
 
-        ResultSet rs1;    
+        ResultSet rs1;
 
 
-        String query = "SELECT nome_drone, " +                               
-                "encomenda.id_e," + 
-                "armazem.nome as arm_nome, " + 
-                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " + 
-                "pt_recol.nome as pt_recol_nome, " + 
-                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " + 
-                "pt_entr.nome as pt_entr_nome, " + 
+        String query = "SELECT nome_drone, " +
+                "encomenda.id_e," +
+                "armazem.nome as arm_nome, " +
+                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
+                "pt_recol.nome as pt_recol_nome, " +
+                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
+                "pt_entr.nome as pt_entr_nome, " +
                 "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
-                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " + 
-                "FROM entrega  " + 
-                "LEFT JOIN encomenda USING(id_e) " + 
-                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " + 
-                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " + 
-                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " + 
-                "LEFT JOIN drone USING(id_d) " +        
-                "WHERE drone.nome_drone = '"+filter+"'";                            
+                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
+                "FROM wprota  " +
+                "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                "LEFT JOIN drone USING(id_d) " +
+                "WHERE drone.nome_drone = '"+filter+"' " +
+                "ORDER BY id_e DESC";
 
         rs1 = execute(query);
-        try {            
+        try {
 
             while(rs1.next()) {
-                ArrayList<String> row = new ArrayList<String>();                
+                ArrayList<String> row = new ArrayList<String>();
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("arm_nome"));
@@ -742,17 +876,17 @@ public class SQL_functions {
                 row.add(rs1.getString("pt_entr_nome"));
                 row.add(rs1.getString("loc_final"));
                 row.add(rs1.getString("data_env"));
-                row.add(rs1.getString("data_entr"));           
+                row.add(rs1.getString("data_entr"));
 
-                table.add(row);                
+                table.add(row);
             }
 
-            return table;            
+            return table;
         }
         catch (Exception e){
             System.err.println(e);
             return null;
-        }       
+        }
     }
 
 }

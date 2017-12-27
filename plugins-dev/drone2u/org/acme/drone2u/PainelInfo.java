@@ -97,8 +97,8 @@ public class PainelInfo extends JPanel {
     private JTable tableEstadoUavs;
     private JTextField uavsOpText;
     private JTextField uavsFalhaText;
-    private JTextField entregasSucessoText;
     private JTextField entregasFalhaText;
+    private JTextField entregasSucessoText;
     private JTextField tempText;
     private JTextField humidadeText;
     private JTextField ventoText;
@@ -110,6 +110,7 @@ public class PainelInfo extends JPanel {
     private JTextField entregasPendentesText;
     private JTextField entregasCursoText;
     private JProgressBar progressBarOcupacao;
+    private JProgressBar progressBarFalhas;
     private TimeSeries series;
 
     /**
@@ -129,7 +130,7 @@ public class PainelInfo extends JPanel {
         drone2uLogo.setIcon(drone2u);
         drone2uLogo.setOpaque(true);
           
-        JLabel lblPainelInfo = new JLabel("Painel Informativo");
+        JLabel lblPainelInfo = new JLabel("Drone2U Plugin");
         lblPainelInfo.setForeground(Color.WHITE);
         lblPainelInfo.setHorizontalAlignment(SwingConstants.CENTER);
         lblPainelInfo.setBackground(Color.DARK_GRAY);
@@ -172,15 +173,15 @@ public class PainelInfo extends JPanel {
         uavsFalhaText.setEditable(false);
         uavsFalhaText.setColumns(10);
         
-        entregasSucessoText = new JTextField();
-        entregasSucessoText.setEditable(false);
-        entregasSucessoText.setColumns(10);
-        
         entregasFalhaText = new JTextField();
         entregasFalhaText.setEditable(false);
         entregasFalhaText.setColumns(10);
         
-        JProgressBar progressBarFalhas = new JProgressBar();
+        entregasSucessoText = new JTextField();
+        entregasSucessoText.setEditable(false);
+        entregasSucessoText.setColumns(10);
+        
+        progressBarFalhas = new JProgressBar();
         progressBarFalhas.setValue(25);
         progressBarFalhas.setToolTipText("");
         progressBarFalhas.setStringPainted(true);
@@ -208,8 +209,8 @@ public class PainelInfo extends JPanel {
                         .addGroup(gl_panelFalhas.createParallelGroup(Alignment.TRAILING)
                             .addComponent(uavsOpText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
                             .addComponent(uavsFalhaText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(entregasSucessoText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
-                        .addComponent(entregasFalhaText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(entregasFalhaText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(entregasSucessoText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
                     .addGap(29))
                 .addGroup(gl_panelFalhas.createSequentialGroup()
                     .addContainerGap()
@@ -237,11 +238,11 @@ public class PainelInfo extends JPanel {
                     .addGap(6)
                     .addGroup(gl_panelFalhas.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblEntregCSucessoas, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(entregasFalhaText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(entregasSucessoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGap(6)
                     .addGroup(gl_panelFalhas.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblEntregFalhadas, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(entregasSucessoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(entregasFalhaText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGap(25))
         );
         panelFalhas.setLayout(gl_panelFalhas);
@@ -254,19 +255,18 @@ public class PainelInfo extends JPanel {
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 1075, Short.MAX_VALUE)
+                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 1077, Short.MAX_VALUE)
                             .addGap(12)
                             .addComponent(drone2uLogo))
-                        .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-                            .addComponent(panel, GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelEstadoUavs, GroupLayout.PREFERRED_SIZE, 771, GroupLayout.PREFERRED_SIZE))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 292, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(panel, 0, 0, Short.MAX_VALUE)
+                                .addComponent(panelCondMeteo, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(panelFalhas, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 859, Short.MAX_VALUE)))
+                            .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                                .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE)
+                                .addComponent(panelEncomendas, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE))))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -278,16 +278,16 @@ public class PainelInfo extends JPanel {
                         .addComponent(lblPainelInfo, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                        .addComponent(panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 158, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(panelCondMeteo, GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, Short.MAX_VALUE))
                         .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
-                    .addContainerGap(13, Short.MAX_VALUE))
+                    .addGap(10))
         );
         panel.setLayout(new CardLayout(0, 0));
         
@@ -345,45 +345,48 @@ public class PainelInfo extends JPanel {
 
         GroupLayout gl_panelOcupacao = new GroupLayout(panelOcupacao);
         gl_panelOcupacao.setHorizontalGroup(
-            gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+            gl_panelOcupacao.createParallelGroup(Alignment.TRAILING)
                 .addGroup(gl_panelOcupacao.createSequentialGroup()
                     .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
                         .addGroup(gl_panelOcupacao.createSequentialGroup()
                             .addContainerGap()
-                            .addComponent(progressBarOcupacao, GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))
+                            .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 269, GroupLayout.PREFERRED_SIZE))
                         .addGroup(gl_panelOcupacao.createSequentialGroup()
-                            .addGap(70)
-                            .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
-                                .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
-                                .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING, false)
-                                    .addComponent(label_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(lblEntregasPendentes))
-                                .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
+                            .addGap(49)
+                            .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
-                                .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.TRAILING)
-                                    .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(entregasPendentesText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
-                                .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))))
-                    .addContainerGap())
-                .addGroup(Alignment.TRAILING, gl_panelOcupacao.createSequentialGroup()
-                    .addContainerGap(98, Short.MAX_VALUE)
-                    .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGap(46)))
+                    .addGap(12))
+                .addGroup(gl_panelOcupacao.createSequentialGroup()
+                    .addContainerGap(32, Short.MAX_VALUE)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                        .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
+                        .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING, false)
+                            .addComponent(label_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblEntregasPendentes))
+                        .addComponent(lblUavsOcupados, GroupLayout.PREFERRED_SIZE, 112, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.UNRELATED)
-                    .addComponent(button)
-                    .addGap(97))
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(uavsOcupadosText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(entregasPendentesText, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(entregasCursoText, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE))
+                    .addGap(21))
         );
         gl_panelOcupacao.setVerticalGroup(
             gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelOcupacao.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(button)
+                        .addGroup(gl_panelOcupacao.createSequentialGroup()
+                            .addGap(2)
+                            .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                         .addComponent(uavsLivresText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -399,49 +402,53 @@ public class PainelInfo extends JPanel {
                     .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblEntregasPendentes, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                         .addComponent(entregasPendentesText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(26, Short.MAX_VALUE))
+                    .addGap(23))
         );
         panelOcupacao.setLayout(gl_panelOcupacao);
         
-        JPanel panel_2 = new JPanel();
-        panel_2.setBackground(Color.GRAY);
-        panel.add(panel_2, "panel2");
+        JPanel panelPlotOcupacao = new JPanel();
+        panelPlotOcupacao.setBackground(Color.GRAY);
+        panel.add(panelPlotOcupacao, "panel2");
+        
+        JPanel chartp = new JPanel();
         
         JLabel label = new JLabel("Ocupação");
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setForeground(Color.WHITE);
         label.setFont(new Font("Monospaced", Font.PLAIN, 20));
         
-        JButton button_1 = new JButton("Plot");
-        
-        JPanel chartp = new JPanel();
-        GroupLayout gl_panel_2 = new GroupLayout(panel_2);
-        gl_panel_2.setHorizontalGroup(
-            gl_panel_2.createParallelGroup(Alignment.TRAILING)
-                .addGroup(gl_panel_2.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
-                        .addGroup(gl_panel_2.createSequentialGroup()
+        JButton btnInfo = new JButton("Info");
+    
+        GroupLayout gl_panelPlotOcupacao = new GroupLayout(panelPlotOcupacao);
+        gl_panelPlotOcupacao.setHorizontalGroup(
+            gl_panelPlotOcupacao.createParallelGroup(Alignment.TRAILING)
+                .addGroup(gl_panelPlotOcupacao.createSequentialGroup()
+                    .addGroup(gl_panelPlotOcupacao.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_panelPlotOcupacao.createSequentialGroup()
+                            .addGap(49)
                             .addComponent(label, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
-                            .addComponent(button_1, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
-                            .addGap(43))
-                        .addGroup(gl_panel_2.createSequentialGroup()
-                            .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                            .addContainerGap())))
-        );
-        gl_panel_2.setVerticalGroup(
-            gl_panel_2.createParallelGroup(Alignment.LEADING)
-                .addGroup(gl_panel_2.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(gl_panel_2.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(label, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(button_1))
-                    .addGap(7)
-                    .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                            .addGap(18)
+                            .addComponent(btnInfo, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
+                            .addGap(46))
+                        .addGroup(gl_panelPlotOcupacao.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)))
                     .addContainerGap())
         );
-        panel_2.setLayout(gl_panel_2);
+        gl_panelPlotOcupacao.setVerticalGroup(
+            gl_panelPlotOcupacao.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_panelPlotOcupacao.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(gl_panelPlotOcupacao.createParallelGroup(Alignment.LEADING)
+                        .addComponent(label, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                        .addGroup(gl_panelPlotOcupacao.createSequentialGroup()
+                            .addGap(2)
+                            .addComponent(btnInfo, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(chartp, GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                    .addContainerGap())
+        );
+        panelPlotOcupacao.setLayout(gl_panelPlotOcupacao);
         
         JLabel lblCondiesMet = new JLabel("Condições meteo.");
         lblCondiesMet.setHorizontalAlignment(SwingConstants.CENTER);
@@ -484,45 +491,53 @@ public class PainelInfo extends JPanel {
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
                             .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
-                                .addComponent(lblHumidade)
-                                .addComponent(lblVento))
+                                .addComponent(lblHumidade, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                                    .addComponent(lblVento, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGap(24)))
                             .addGap(42))
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
-                            .addComponent(lblTemperatura)
+                            .addComponent(lblTemperatura, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.UNRELATED)))
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.TRAILING)
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(ventoText, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
-                        .addComponent(humidadeText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                        .addComponent(tempText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
+                            .addComponent(ventoText, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
+                        .addComponent(humidadeText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                        .addComponent(tempText, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE))
                     .addGap(55))
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addGap(24)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING, false)
-                        .addComponent(lblCondiesMet, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
+                        .addComponent(lblCondiesMet, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                         .addComponent(weatherDescriptionText, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
-                    .addContainerGap(25, Short.MAX_VALUE))
+                    .addGap(33))
         );
         gl_panelCondMeteo.setVerticalGroup(
             gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(lblCondiesMet, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblCondiesMet, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
                     .addGap(1)
-                    .addComponent(weatherDescriptionText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(weatherDescriptionText, GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblTemperatura, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(tempText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblTemperatura, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addGap(5)
+                            .addComponent(tempText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblVento, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblVento, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addGap(5)
+                            .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblHumidade, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblHumidade, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                        .addGroup(gl_panelCondMeteo.createSequentialGroup()
+                            .addGap(5)
+                            .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
         );
         panelCondMeteo.setLayout(gl_panelCondMeteo);
@@ -536,20 +551,20 @@ public class PainelInfo extends JPanel {
         GroupLayout gl_panelEstadoUavs = new GroupLayout(panelEstadoUavs);
         gl_panelEstadoUavs.setHorizontalGroup(
             gl_panelEstadoUavs.createParallelGroup(Alignment.TRAILING)
-                .addGroup(gl_panelEstadoUavs.createSequentialGroup()
+                .addGroup(Alignment.LEADING, gl_panelEstadoUavs.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(gl_panelEstadoUavs.createParallelGroup(Alignment.LEADING)
-                        .addComponent(scrollPaneEstadoUavs, GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+                        .addComponent(scrollPaneEstadoUavs, GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE)
                         .addComponent(lblEstadoUavs, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE))
                     .addContainerGap())
         );
         gl_panelEstadoUavs.setVerticalGroup(
             gl_panelEstadoUavs.createParallelGroup(Alignment.TRAILING)
-                .addGroup(gl_panelEstadoUavs.createSequentialGroup()
+                .addGroup(Alignment.LEADING, gl_panelEstadoUavs.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(lblEstadoUavs, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(scrollPaneEstadoUavs, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addComponent(scrollPaneEstadoUavs, GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
                     .addContainerGap())
         );
         
@@ -569,9 +584,7 @@ public class PainelInfo extends JPanel {
         panelEstadoUavs.setLayout(gl_panelEstadoUavs);
         
         JScrollPane scrollPaneEncomendas = new JScrollPane();
-        
-        
-        //String [] uavsNames = {"x"}
+
         comboBoxFiltroUav = new JComboBox<>();        
         comboBoxFiltroUav.setForeground(Color.BLACK);
         comboBoxFiltroUav.setBackground(Color.WHITE);
@@ -631,18 +644,18 @@ public class PainelInfo extends JPanel {
         tableEncomendas.setRowSelectionAllowed(false);
         tableEncomendas.setFont(new Font("Monospaced", Font.PLAIN, 12));
         tableEncomendas.setModel(new DefaultTableModel(
-                new Object[][] {
-                },
-                new String[] {
-                    "ID UAV", "ID Encom.", "Localização inicial", "Localização final", "Data/hora envio", "Data/hora entrega"
-                }
-            ));
-        tableEncomendas.getColumnModel().getColumn(0).setPreferredWidth(40);
-        tableEncomendas.getColumnModel().getColumn(1).setPreferredWidth(40);
-        tableEncomendas.getColumnModel().getColumn(2).setPreferredWidth(150);
-        tableEncomendas.getColumnModel().getColumn(3).setPreferredWidth(150);
-        tableEncomendas.getColumnModel().getColumn(4).setPreferredWidth(100);
-        tableEncomendas.getColumnModel().getColumn(5).setPreferredWidth(100);
+            new Object[][] {
+            },
+            new String[] {
+                "ID UAV", "ID Encom.", "Localiza\u00E7\u00E3o inicial", "Localiza\u00E7\u00E3o final", "Data/hora envio", "Data/hora entrega"
+            }
+        ));
+        tableEncomendas.getColumnModel().getColumn(0).setPreferredWidth(15);
+        tableEncomendas.getColumnModel().getColumn(1).setPreferredWidth(30);
+        tableEncomendas.getColumnModel().getColumn(2).setPreferredWidth(160);
+        tableEncomendas.getColumnModel().getColumn(3).setPreferredWidth(160);
+        tableEncomendas.getColumnModel().getColumn(4).setPreferredWidth(125);
+        tableEncomendas.getColumnModel().getColumn(5).setPreferredWidth(125);
         scrollPaneEncomendas.setViewportView(tableEncomendas);
         panelEncomendas.setLayout(gl_panelEncomendas);
         setLayout(groupLayout);
@@ -662,15 +675,12 @@ public class PainelInfo extends JPanel {
         final XYPlot plot = result.getXYPlot();
         ValueAxis axis = plot.getDomainAxis();
         axis.setAutoRange(true);
-        axis.setFixedAutoRange(60000.0);  // 60 seconds
+        axis.setFixedAutoRange(300000.0);  // 5 minutes (300 seconds)
         axis = plot.getRangeAxis();
         axis.setRange(0.0, 100.0);      
         
         ChartPanel chartPanel = new ChartPanel( result );
-        chartPanel.setPreferredSize( new java.awt.Dimension( 200 , 200 ) ); 
-        
-        
-        
+        chartPanel.setPreferredSize( new java.awt.Dimension( 200 , 200 ) );
         
         chartp.setLayout(new java.awt.BorderLayout());
          
@@ -683,10 +693,14 @@ public class PainelInfo extends JPanel {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CardLayout cardLayout = (CardLayout) panel.getLayout();
-                cardLayout.show(panel, "panel2");
-                System.out.println("oiiiiiiiii");
-                
-                
+                cardLayout.show(panel, "panel2");              
+            }
+        });
+        
+        btnInfo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                CardLayout cardLayout = (CardLayout) panel.getLayout();
+                cardLayout.show(panel, "panel1"); 
             }
         });
     
@@ -695,8 +709,7 @@ public class PainelInfo extends JPanel {
             public void actionPerformed(ActionEvent e) {
                
             }
-        });
-    
+        });    
     }
     
     /**
@@ -799,8 +812,7 @@ public class PainelInfo extends JPanel {
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);
-        
-               
+      
         ventoText.setText(df.format(wind_velocity)+" km/h");
         humidadeText.setText(df.format(content.get(0).get("humidity"))+" %");
         tempText.setText(df.format(temperature)+ " C");
@@ -818,77 +830,55 @@ public class PainelInfo extends JPanel {
             database.setSchema();       
         }
         
-        ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
-        float inactive_vehicles = 0;
-        float active_vehicles = 0;
+        //ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
         
-        inactive_vehicles = database.getFreeUavs();
-        active_vehicles = database.getBusyUavs();
+        float freeUavs, busyUavs, failureUavs, operationalUavs;
+        int pendingDelivery, pendingSend, successfulDeliveries;        
+
+        freeUavs = database.getFreeUavs(); //uavs livres
+        busyUavs = database.getBusyUavs();   //uavs ocupados 
+        pendingDelivery = database.getPendingDelivery();
+        pendingSend = database.getPendingSend();
+        failureUavs = database.getFailureUavs();
+        operationalUavs = database.getOperationalUavs();
+        successfulDeliveries = database.getSuccessfulDeliveries();
         
                 
-        uavsLivresText.setText(String.valueOf(vehicles_list.length));
+        /*uavsLivresText.setText(String.valueOf(vehicles_list.length));
         
         for(int i = 0; i < vehicles_list.length; i++) {
             if(vehicles_list[i].getActivePlan() == null)
-                inactive_vehicles++;
+                freeUavs++;
             else
-                active_vehicles++;
-        }       
-      //  uavsLivresText.setText(String.valueOf((int)inactive_vehicles));
-      //  uavsOcupadosText.setText(String.valueOf((int)active_vehicles));
+                busyUavs++;
+        }*/       
+        uavsLivresText.setText(String.valueOf((int)freeUavs));
+        uavsOcupadosText.setText(String.valueOf((int)busyUavs));
         
-        if(active_vehicles+inactive_vehicles == 0)
+        entregasPendentesText.setText(String.valueOf(pendingSend));
+        entregasCursoText.setText(String.valueOf(pendingDelivery));
+        
+        uavsOpText.setText(String.valueOf((int)operationalUavs));
+        uavsFalhaText.setText(String.valueOf((int)failureUavs));
+        
+        entregasSucessoText.setText(String.valueOf(successfulDeliveries));
+        entregasFalhaText.setText("0");
+        
+        System.out.println("busy = "+busyUavs);        
+        System.out.println("operational = "+operationalUavs);
+        
+        
+        
+        if(busyUavs+freeUavs == 0)
             progressBarOcupacao.setValue(100);
         else
-            progressBarOcupacao.setValue((int)(active_vehicles/(active_vehicles+inactive_vehicles)*100));
+            progressBarOcupacao.setValue((int)(busyUavs/(busyUavs+freeUavs)*100));
         
-        series.add(new Millisecond(), (active_vehicles/(active_vehicles+inactive_vehicles)*100));
-    }
-    
-    
-    JTextField getUavsLivresText() {
-        return uavsLivresText;
-    }
-    JTextField getEntregasCursoText() {
-        return entregasCursoText;
-    }
-    JTextField getUavsOcupadosText() {
-        return uavsOcupadosText;
-    }
-    JTextField getEntregasPendentesText() {
-        return entregasPendentesText;
-    }
-    JTextField getuavsOpText() {
-        return uavsLivresText;
-    }
-    JTextField getUavsOpText() {
-        return uavsOpText;        
-    }
-    JTextField geyUavsFalhaText(){
-        return uavsFalhaText;
-    }
-    JTextField getEntregasSucessoText(){
-        return entregasSucessoText;
-    }
-    JTextField getEntregasFalhaText(){
-        return entregasFalhaText;
-    }
-    JTextField getTempText(){
-        return tempText;
-    }
-    JTextField getHumidadeText(){
-        return humidadeText;
-    }
-    JTextField getVentoText(){
-        return ventoText;
-    }
-    JProgressBar getProgressBarOcupacao() {
-        return progressBarOcupacao;        
-    }
-    JTable getTableEncomendas() {
-        return tableEncomendas;        
-    }
-    JTable getTableEstadoUavs() {
-        return tableEstadoUavs;
-    }
+        if(failureUavs+operationalUavs == 0)
+            progressBarFalhas.setValue(100);
+        else
+            progressBarFalhas.setValue((int)(failureUavs/(failureUavs+operationalUavs)*100));
+        
+        series.add(new Millisecond(), (busyUavs/(busyUavs+freeUavs)*100));
+    }    
 }
