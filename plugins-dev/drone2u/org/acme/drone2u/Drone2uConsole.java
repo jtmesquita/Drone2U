@@ -732,8 +732,9 @@ public class Drone2uConsole extends ConsolePanel {
         }
     }
 
-    @Periodic(millisBetweenUpdates = 1000 * 5) // a cada 5segundos é chamada a função
-    public void checkVehicles() {
+    //@Periodic(millisBetweenUpdates = 1000 * 5) // a cada 5segundos é chamada a função
+    @Subscribe
+    public void checkVehicles(ConsoleEventVehicleStateChanged event) {
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
         // significa que algum UAV deixou de estar em serviço
