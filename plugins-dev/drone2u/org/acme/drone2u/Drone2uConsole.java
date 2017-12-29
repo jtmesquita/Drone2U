@@ -95,22 +95,21 @@ import java.util.Date;
 @PluginDescription(name = "Drone2U")
 @Popup(pos = POSITION.CENTER, width = 442, height = 291, accelerator = 'Y')
 @SuppressWarnings("serial")
-public class Drone2uConsole extends ConsolePanel{
+public class Drone2uConsole extends ConsolePanel {
 
     private final String defaultCondition = "ManeuverIsDone";
     SQL_functions database = new SQL_functions();
     Weather data = new Weather();
-    Vector<String> UAV_map = new Vector<String>();   // na primeira posição contém o nome do UAV que está disponível no sistema
+    Vector<String> UAV_map = new Vector<String>(); // na primeira posição contém o nome do UAV que está disponível no
+                                                   // sistema
 
-
-    //private UavsState stateUavsPanel = new UavsState();
+    // private UavsState stateUavsPanel = new UavsState();
     private PainelInfo painelInfoPanel = new PainelInfo();
-    //private JFrame stateUavsFrame;
+    // private JFrame stateUavsFrame;
     private JFrame painelInfoFrame;
     int vel = 40;
     int height = 700;
     int last_order_id = 256;
-
 
     /**
      * @param console
@@ -119,13 +118,12 @@ public class Drone2uConsole extends ConsolePanel{
         super(console);
     }
 
-
     @Override
     public void cleanSubPanel() {
         // TODO Auto-generated method stub
     }
 
-    public boolean sendPlanToVehicle (String vehicleID, ConsoleLayout cl, PlanControl pspec) {
+    public boolean sendPlanToVehicle(String vehicleID, ConsoleLayout cl, PlanControl pspec) {
         return cl.getImcMsgManager().sendMessageToVehicle(pspec, vehicleID, null);
     }
 
@@ -138,22 +136,23 @@ public class Drone2uConsole extends ConsolePanel{
         return manType + i;
     }
 
-    public PlanControl buildPlan (String vehicleID, int OrderId , MissionType mt, LocationType [] destArray, double speed, double height) {
+    public PlanControl buildPlan(String vehicleID, int OrderId, MissionType mt, LocationType[] destArray, double speed,
+            double height) {
 
         PlanType neptusPlan = new PlanType(mt);
         neptusPlan.addVehicle(vehicleID);
 
-        if(OrderId != -1) {
-            neptusPlan.setId("Order:"+OrderId);
+        if (OrderId != -1) {
+            neptusPlan.setId("Order:" + OrderId);
         }
         else
             neptusPlan.setId("Return2WH");
 
         int aux = 0;
 
-        for(LocationType dest : destArray) {
+        for (LocationType dest : destArray) {
 
-            if (aux == 0) {             //se for a primeira manobra adiciona a primeira manobra
+            if (aux == 0) { // se for a primeira manobra adiciona a primeira manobra
                 dest.convertToAbsoluteLatLonDepth();
 
                 ManeuverLocation maneuverLoc = new ManeuverLocation(dest);
@@ -176,13 +175,13 @@ public class Drone2uConsole extends ConsolePanel{
                 maneuverLoc.setZ(height);
                 maneuverLoc.setZUnits(ManeuverLocation.Z_UNITS.HEIGHT);
 
-                //Maneuver nextMan = neptusPlan.getGraph().getFollowingManeuver(manID);
+                // Maneuver nextMan = neptusPlan.getGraph().getFollowingManeuver(manID);
                 Maneuver lastMan = neptusPlan.getGraph().getLastManeuver();
 
                 Goto point = new Goto();
 
                 try {
-                    point.setProperties(lastMan.getProperties());     // coloco no novo ponto as propriedades do anterior
+                    point.setProperties(lastMan.getProperties()); // coloco no novo ponto as propriedades do anterior
                 }
                 catch (Exception e) {
                     NeptusLog.pub().error(e, e);
@@ -198,86 +197,80 @@ public class Drone2uConsole extends ConsolePanel{
                 Vector<TransitionType> addedTransitions = new Vector<TransitionType>();
                 Vector<TransitionType> removedTransitions = new Vector<TransitionType>();
 
-                /*verifico se o novo ponto criado não é nulo
-                if (point == null) {
-                    GuiUtils.errorMessage(this, I18n.text("Error adding maneuver"),
-                            I18n.textf("The maneuver %maneuverType can't be added", point.getType()));
-                    return null;
-                }*/
+                /*
+                 * verifico se o novo ponto criado não é nulo if (point == null) { GuiUtils.errorMessage(this,
+                 * I18n.text("Error adding maneuver"), I18n.textf("The maneuver %maneuverType can't be added",
+                 * point.getType())); return null; }
+                 */
 
-                /* verifico se a ultima manobra não é nula e se o novo ponto
-                   não é a manobra que já foi adicionada
-                   se não for adiciono as transições*/
+                /*
+                 * verifico se a ultima manobra não é nula e se o novo ponto não é a manobra que já foi adicionada se
+                 * não for adiciono as transições
+                 */
                 if (lastMan != null && lastMan != point) {
 
                     if (neptusPlan.getGraph().getExitingTransitions(lastMan).size() != 0) {
                         for (TransitionType exitingTrans : neptusPlan.getGraph().getExitingTransitions(lastMan)) {
-                            removedTransitions.add(neptusPlan.getGraph().removeTransition(exitingTrans.getSourceManeuver(),
-                                    exitingTrans.getTargetManeuver()));
+                            removedTransitions.add(neptusPlan.getGraph().removeTransition(
+                                    exitingTrans.getSourceManeuver(), exitingTrans.getTargetManeuver()));
                         }
                     }
 
-                    addedTransitions.add(neptusPlan.getGraph().addTransition(lastMan.getId(), point.getId(), defaultCondition));
+                    addedTransitions
+                            .add(neptusPlan.getGraph().addTransition(lastMan.getId(), point.getId(), defaultCondition));
                 }
 
                 neptusPlan.getGraph().addManeuver(point);
             }
         }
 
-
-
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
-        pc.setRequestId(IMCSendMessageUtils.getNextRequestId());    // IMCSendMessageUtils.... é apenas para fins de sincronização
+        pc.setRequestId(IMCSendMessageUtils.getNextRequestId()); // IMCSendMessageUtils.... é apenas para fins de
+                                                                 // sincronização
         pc.setPlanId(neptusPlan.getId());
-        //System.out.println(neptusPlan.asIMCPlan().asXml(true));
+        // System.out.println(neptusPlan.asIMCPlan().asXml(true));
 
-
-        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());    // criação da mensagem IMC para ser mandada para p drone
+        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan()); // criação da mensagem IMC para ser
+                                                                                 // mandada para p drone
 
         SetEntityParameters heightc = new SetEntityParameters();
         heightc.setName("Height Control");
         EntityParameter activeP = new EntityParameter("Active", "true");
-        heightc.setParams(Arrays.asList(new EntityParameter[]{activeP}));
+        heightc.setParams(Arrays.asList(new EntityParameter[] { activeP }));
 
         SetEntityParameters autopilot = new SetEntityParameters();
         autopilot.setName("Autopilot");
-        autopilot.setParams(Arrays.asList(new EntityParameter[]{
-                new EntityParameter("Ardupilot Tracker", "false"),
-                new EntityParameter("Formation Flight", "false")}));
+        autopilot.setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Ardupilot Tracker", "false"),
+                new EntityParameter("Formation Flight", "false") }));
 
         SetEntityParameters pathController = new SetEntityParameters();
         pathController.setName("Path Control");
-        pathController.setParams(Arrays.asList(new EntityParameter[]{
-                new EntityParameter("Use controller", "true")
-        }));
-
+        pathController
+                .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
 
         // alteração da configuração do drone de modo a desligar a opção Ardupilot
         // e ativação das opções Height control e PathControl
         try {
-            pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] {
-                    heightc,
-                    autopilot,
-                    pathController
-            }));
+            pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] { heightc, autopilot, pathController }));
         }
 
         catch (Exception e1) {
             e1.printStackTrace();
         }
 
-        pc.setArg(pSpec);     // envio do plano para o drone
+        pc.setArg(pSpec); // envio do plano para o drone
 
         return pc;
     }
 
-    public PlanControl buildPlan_loiter (String vehicleID, MissionType mt, LocationType loc, double speed, double height, double radius) {
+    public PlanControl buildPlan_loiter(String vehicleID, MissionType mt, LocationType loc, double speed, double height,
+            double radius) {
 
         PlanType neptusPlan = new PlanType(mt);
         neptusPlan.addVehicle(vehicleID);
-        
+
         neptusPlan.setId("Loiter");
 
         loc.convertToAbsoluteLatLonDepth();
@@ -299,54 +292,46 @@ public class Drone2uConsole extends ConsolePanel{
 
         neptusPlan.getGraph().addManeuver(point);
 
-
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
-        pc.setRequestId(IMCSendMessageUtils.getNextRequestId());    // IMCSendMessageUtils.... é apenas para fins de sincronização
+        pc.setRequestId(IMCSendMessageUtils.getNextRequestId()); // IMCSendMessageUtils.... é apenas para fins de
+                                                                 // sincronização
         pc.setPlanId(neptusPlan.getId());
-        //System.out.println(neptusPlan.asIMCPlan().asXml(true));
+        // System.out.println(neptusPlan.asIMCPlan().asXml(true));
 
-
-        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan());    // criação da mensagem IMC para ser mandada para p drone
+        PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan()); // criação da mensagem IMC para ser
+                                                                                 // mandada para p drone
 
         SetEntityParameters heightc = new SetEntityParameters();
         heightc.setName("Height Control");
         EntityParameter activeP = new EntityParameter("Active", "true");
-        heightc.setParams(Arrays.asList(new EntityParameter[]{activeP}));
+        heightc.setParams(Arrays.asList(new EntityParameter[] { activeP }));
 
         SetEntityParameters autopilot = new SetEntityParameters();
         autopilot.setName("Autopilot");
-        autopilot.setParams(Arrays.asList(new EntityParameter[]{
-                new EntityParameter("Ardupilot Tracker", "false"),
-                new EntityParameter("Formation Flight", "false")}));
+        autopilot.setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Ardupilot Tracker", "false"),
+                new EntityParameter("Formation Flight", "false") }));
 
         SetEntityParameters pathController = new SetEntityParameters();
         pathController.setName("Path Control");
-        pathController.setParams(Arrays.asList(new EntityParameter[]{
-                new EntityParameter("Use controller", "true")
-        }));
-
+        pathController
+                .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
 
         // alteração da configuração do drone de modo a desligar a opção Ardupilot
         // e ativação das opções Height control e PathControl
         try {
-            pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] {
-                    heightc,
-                    autopilot,
-                    pathController
-            }));
+            pSpec.setStartActions(Arrays.asList(new SetEntityParameters[] { heightc, autopilot, pathController }));
         }
 
         catch (Exception e1) {
             e1.printStackTrace();
         }
 
-        pc.setArg(pSpec);     // envio do plano para o drone
+        pc.setArg(pSpec); // envio do plano para o drone
 
         return pc;
     }
-
 
     /**
      * Inicializa a GUI do plugin.
@@ -378,41 +363,27 @@ public class Drone2uConsole extends ConsolePanel{
         titlePlugin.setFont(new Font("DejaVu Sans", Font.PLAIN, 25));
 
         GroupLayout groupLayout = new GroupLayout(this);
-        groupLayout.setHorizontalGroup(
-                groupLayout.createParallelGroup(Alignment.LEADING)
-                .addGroup(groupLayout.createSequentialGroup()
-                        .addGap(35)
-                        .addComponent(drone2uLogo)
-                        .addGap(18)
-                        .addComponent(titlePlugin)
-                        .addGap(87))
-                .addGroup(groupLayout.createSequentialGroup()
-                        .addContainerGap()
+        groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                .addGroup(groupLayout.createSequentialGroup().addGap(35).addComponent(drone2uLogo).addGap(18)
+                        .addComponent(titlePlugin).addGap(87))
+                .addGroup(groupLayout.createSequentialGroup().addContainerGap()
                         .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-                                .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(estadoUavsButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
-                        .addContainerGap(41, Short.MAX_VALUE))
-                );
-        groupLayout.setVerticalGroup(
-                groupLayout.createParallelGroup(Alignment.LEADING)
+                                .addComponent(testButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE,
+                                        GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(estadoUavsButton, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 419,
+                                        Short.MAX_VALUE))
+                        .addContainerGap(41, Short.MAX_VALUE)));
+        groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
                         .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addGroup(groupLayout.createSequentialGroup()
-                                        .addGap(29)
-                                        .addComponent(drone2uLogo))
-                                .addGroup(groupLayout.createSequentialGroup()
-                                        .addGap(69)
-                                        .addComponent(titlePlugin)))
+                                .addGroup(groupLayout.createSequentialGroup().addGap(29).addComponent(drone2uLogo))
+                                .addGroup(groupLayout.createSequentialGroup().addGap(69).addComponent(titlePlugin)))
                         .addGap(37)
                         .addComponent(estadoUavsButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(testButton, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(16, Short.MAX_VALUE))
-                );
+                        .addContainerGap(16, Short.MAX_VALUE)));
         setLayout(groupLayout);
-
-
-
 
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -436,54 +407,49 @@ public class Drone2uConsole extends ConsolePanel{
                 destArray[3].setLatitudeStr("41N51'26.49''");
 
                 // chamada da função para conetar à base de dados
-                if(!database.isConnected()) {
+                if (!database.isConnected()) {
                     Connection conn = database.connect();
                     database.setSchema();
                 }
 
-                //CHAMADA DA FUNÇAO PARA TESTE
+                // CHAMADA DA FUNÇAO PARA TESTE
 
                 TesteRota();
 
                 // teste para ver se vai buscar direito à base de dados
-                //database.getPoints();
+                // database.getPoints();
 
-                //PlanControl pc = buildPlan("x8-02", getConsole().getMission(), destArray, 20, 200);
+                // PlanControl pc = buildPlan("x8-02", getConsole().getMission(), destArray, 20, 200);
 
-                //System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
+                // System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
 
-                //check_new_points();
+                // check_new_points();
             }
         });
 
-        //se o botão estado uavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs
+        // se o botão estado uavs for clicado abre um JFrame com uma tabela que indica o estado dos UAVs
         estadoUavsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                /*stateUavsFrame = new JFrame();
-                stateUavsFrame.add(stateUavsPanel); //adiciona JPanel que contem a tabela ao JFrame criado
-                stateUavsFrame.setSize(850, 505);
-                stateUavsFrame.setVisible(true);*/
+                /*
+                 * stateUavsFrame = new JFrame(); stateUavsFrame.add(stateUavsPanel); //adiciona JPanel que contem a
+                 * tabela ao JFrame criado stateUavsFrame.setSize(850, 505); stateUavsFrame.setVisible(true);
+                 */
                 painelInfoFrame = new JFrame();
                 painelInfoFrame.add(painelInfoPanel);
                 painelInfoFrame.setSize(1184, 700);
                 painelInfoFrame.setVisible(true);
                 painelInfoFrame.setResizable(false);
 
-
             }
         });
     }
 
-    /*@Subscribe
-    public void on(DesiredPath msg) {
-        if (msg.getSourceName().equals(getConsole().getMainSystem())) {
-            tSpeed = msg.getAsNumber("speed").doubleValue();
-            speedLabelUpdate();
-        }
-    }*/
+    /*
+     * @Subscribe public void on(DesiredPath msg) { if (msg.getSourceName().equals(getConsole().getMainSystem())) {
+     * tSpeed = msg.getAsNumber("speed").doubleValue(); speedLabelUpdate(); } }
+     */
 
-
-    @Periodic(millisBetweenUpdates=1000) // a cada 1 segundo é chamada a função
+    @Periodic(millisBetweenUpdates = 1000) // a cada 1 segundo é chamada a função
     public void update_gui() {
         painelInfoPanel.refreshTableEstadoUavs();
         painelInfoPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
@@ -492,27 +458,24 @@ public class Drone2uConsole extends ConsolePanel{
     }
 
     /**
-     * Função que verifica se alguma encomenda é colocada na
-     * base de dados
+     * Função que verifica se alguma encomenda é colocada na base de dados
      */
-    //@Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    // @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
     public void check_new_points() {
 
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
+        if (!database.isConnected()) {
             Connection conn = database.connect();
             database.setSchema();
         }
 
-
-
         // se detetar uma nova encomenda no site vai ter de lidar com as que ainda não foram resolvidas
         int new_order_id = database.getId_last_order();
 
-        if( new_order_id> last_order_id) {
-            System.out.println("Nova encomenda na bd. ID= "+database.getId_last_order());
+        if (new_order_id > last_order_id) {
+            System.out.println("Nova encomenda na bd. ID= " + database.getId_last_order());
 
-            //last_order_id = database.getId_last_order();
+            // last_order_id = database.getId_last_order();
 
             Vector<Integer> list_ids;
 
@@ -523,10 +486,10 @@ public class Drone2uConsole extends ConsolePanel{
             warehouse.setLongitudeStr("6W42'34.78''");
             warehouse.setLatitudeStr("41N51'27.53''");
 
-            for(Integer id : list_ids) {
+            for (Integer id : list_ids) {
                 System.out.println(id);
 
-                //vou ter de ler o local de recolha e o local de entrega
+                // vou ter de ler o local de recolha e o local de entrega
                 LocationType final_location;
 
                 final_location = database.getLocation_byId(id);
@@ -535,8 +498,10 @@ public class Drone2uConsole extends ConsolePanel{
 
                 destArray[0] = warehouse;
                 destArray[1] = final_location;
+                
+                
 
-                PlanControl pc = buildPlan("x8-02", id, getConsole().getMission(),destArray, vel, height);
+                PlanControl pc = buildPlan("x8-02", id, getConsole().getMission(), destArray, vel, height);
 
                 System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
             }
@@ -547,9 +512,10 @@ public class Drone2uConsole extends ConsolePanel{
 
     /**
      * Função que verifica as condições meteorológicas
+     * 
      * @return weather_info[temperature, wind_veloc., weather_id]
      */
-    //@Periodic(millisBetweenUpdates=1000*60) // a cada 60segundos é chamada a função
+    // @Periodic(millisBetweenUpdates=1000*60) // a cada 60segundos é chamada a função
     public double[] check_weather() {
 
         Vector<Map<String, Object>> content = new Vector<>();
@@ -567,23 +533,20 @@ public class Drone2uConsole extends ConsolePanel{
         weather_description = weather_description[2].split("=");
 
         double temperature = Double.parseDouble(content.get(0).get("temp").toString());
-        double wind_velocity = Double.parseDouble(content.get(1).get("speed").toString())*3.6;
+        double wind_velocity = Double.parseDouble(content.get(1).get("speed").toString()) * 3.6;
 
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);
 
+        // System.out.println("Matosinhos:");
+        // System.out.println(" Temperatura: "+ temperature+" graus");
+        // System.out.println(" Humidade: "+ content.get(0).get("humidity"));
+        // System.out.println(" Velo. Vento: "+df.format(wind_velocity)+"Km/h");
+        // System.out.println(" Descrição: "+weather_description[1]);
 
-        System.out.println("Matosinhos:");
-        System.out.println("    Temperatura: "+  temperature+" graus");
-        System.out.println("    Humidade: "+ content.get(0).get("humidity"));
-        System.out.println("    Velo. Vento: "+df.format(wind_velocity)+"Km/h");
-        System.out.println("    Descrição: "+weather_description[1]);
-
-        weather_info[0] =temperature;
-        weather_info[1] =wind_velocity;
-        weather_info[2] =weather_id;
-
-        
+        weather_info[0] = temperature;
+        weather_info[1] = wind_velocity;
+        weather_info[2] = weather_id;
 
         return weather_info;
     }
@@ -593,40 +556,38 @@ public class Drone2uConsole extends ConsolePanel{
      * @param order_id
      * @return path
      */
-    public LocationType[]  getPath(int order_id, String way) {
+    public LocationType[] getPath(int order_id, String way) {
 
         String[] latitudes;
         String[] longitudes;
         String[] path_fromBD = new String[2];
         int size;
 
-        if ( way.equals("entrega"))
-        {
-            path_fromBD = database.getPathForOrder(order_id); 
+        if (way.equals("entrega")) {
+            path_fromBD = database.getPathForOrder(order_id);
         }
-        else if(way.equals("regresso")) {
+        else if (way.equals("regresso")) {
             path_fromBD = database.getPathToWhareHouse(order_id);
         }
 
-        
         latitudes = path_fromBD[1].split(";");
         longitudes = path_fromBD[0].split(";");
-        
-        if(!latitudes[0].equals("-")) {
+
+        if (!latitudes[0].equals("-")) {
             size = latitudes.length;
 
-            //        for(int i=0; i<size; i++) {
-            //            System.out.println("latidute"+i+": "+latitudes[i]);
-            //            System.out.println("longitude"+i+": "+longitudes[i]);
-            //        }
-
+            // for(int i=0; i<size; i++) {
+            // System.out.println("latidute"+i+": "+latitudes[i]);
+            // System.out.println("longitude"+i+": "+longitudes[i]);
+            // }
 
             LocationType[] path = new LocationType[size];
 
-            for(int i=0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 path[i] = new LocationType();
 
-                path[i].setLatitudeStr(latitudes[i]);;
+                path[i].setLatitudeStr(latitudes[i]);
+                ;
                 path[i].setLongitudeStr(longitudes[i]);
             }
 
@@ -636,30 +597,29 @@ public class Drone2uConsole extends ConsolePanel{
         else {
             System.out.println("é para fazer loiter ao armazem - nao volta para tras");
             path_fromBD = database.getPathForOrder(order_id);
-            
+
             latitudes = path_fromBD[1].split(";");
             longitudes = path_fromBD[0].split(";");
-            
+
             size = latitudes.length;
-            
+
             LocationType[] path = new LocationType[1];
-            
+
             path[0] = new LocationType();
 
-            path[0].setLatitudeStr(latitudes[size-1]);;
-            path[0].setLongitudeStr(longitudes[size-1]);
-            
+            path[0].setLatitudeStr(latitudes[size - 1]);
+            ;
+            path[0].setLongitudeStr(longitudes[size - 1]);
+
             return path;
         }
 
-        
     }
 
     /**
-     * Função que verifica qual a manobra que um drone está a executar
-     * e atualiza a disponibilidade de cada drone
+     * Função que verifica qual a manobra que um drone está a executar e atualiza a disponibilidade de cada drone
      */
-    @Periodic(millisBetweenUpdates=1000*5) // a cada 60segundos é chamada a função
+    @Periodic(millisBetweenUpdates = 1000 * 5) // a cada 60segundos é chamada a função
     public void check_maneuver() {
         String raw_maneuver = null;
         String[] maneuver_aux;
@@ -668,26 +628,26 @@ public class Drone2uConsole extends ConsolePanel{
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
+        if (!database.isConnected()) {
             database.connect();
             database.setSchema();
         }
 
-
-        for(int i = 0; i < vehicles_list.length; i++) { 
-            if(vehicles_list[i].getActivePlan() == null) {
+        for (int i = 0; i < vehicles_list.length; i++) {
+            if (vehicles_list[i].getActivePlan() == null) {
                 maneuver = "No maneuvers";
             }
             else {
-                raw_maneuver = vehicles_list[i].getActivePlan().toString(); // vem no formato: pl_btf1ym|Man:GOTO1 (nome_plano|man: nome_manobra)
+                raw_maneuver = vehicles_list[i].getActivePlan().toString(); // vem no formato: pl_btf1ym|Man:GOTO1
+                                                                            // (nome_plano|man: nome_manobra)
                 maneuver_aux = raw_maneuver.split(":");
 
                 maneuver = maneuver_aux[1];
             }
 
-            //System.out.println("Manobra: " + maneuver);
+            // System.out.println("Manobra: " + maneuver);
             // Verificar se a manobra é Loiter para verififar disponibilidade do drone
-            if(maneuver.equals("Loiter")) {
+            if (maneuver.equals("Loiter")) {
                 database.UAVstateUpdate(vehicles_list[i].getName(), "TRUE");
             }
             else
@@ -695,31 +655,31 @@ public class Drone2uConsole extends ConsolePanel{
 
         }
 
-        //System.out.println("Maneuver: "+maneuver);
-        //return maneuver;
+        // System.out.println("Maneuver: "+maneuver);
+        // return maneuver;
     }
 
     /**
-     * Função que deteta a transição entre o estado de ececução de uma manobra (nosso caso entrega)
-     * e o estado livre.
+     * Função que deteta a transição entre o estado de ececução de uma manobra (nosso caso entrega) e o estado livre.
      * Atualiza a hora e data de uma entregua assim como atualiza o estado da ecomenda para entregue
+     * 
      * @param event
      */
     @Subscribe
     public void on(ConsoleEventVehicleStateChanged event) {
-        if(event.getState().toString().equals("SERVICE")) {
-            //  ou seja deve ter terminado uma manobra ou entrou em serviço pela primeira vez
-            //  só faz algo se estiver na lista UAV_Map
-            if( UAV_map.indexOf(event.getVehicle().toString()) != -1) {                
+        if (event.getState().toString().equals("SERVICE")) {
+            // ou seja deve ter terminado uma manobra ou entrou em serviço pela primeira vez
+            // só faz algo se estiver na lista UAV_Map
+            if (UAV_map.indexOf(event.getVehicle().toString()) != -1) {
 
                 int OrderId = database.getLastOrderIdDrone(event.getVehicle().toString());
 
-                //  vai guardar a hora de finalização de encomenda
-                //  para isso vai buscar qual a última encomenda que o drone fez (na base de dados na tabela entrega)
+                // vai guardar a hora de finalização de encomenda
+                // para isso vai buscar qual a última encomenda que o drone fez (na base de dados na tabela entrega)
 
-                if( database.getOrderState(OrderId).equals("enviada")) {    
-                    //verificar o estado da encomenda - se estiver "enviada" significa que acabou de entregar
-                    //então vai atualizar a hora de fim e vai ter de enviar o drone para o armazém mais próximo
+                if (database.getOrderState(OrderId).equals("enviada")) {
+                    // verificar o estado da encomenda - se estiver "enviada" significa que acabou de entregar
+                    // então vai atualizar a hora de fim e vai ter de enviar o drone para o armazém mais próximo
 
                     // vou então atualizar as horas de entrega
                     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -732,7 +692,7 @@ public class Drone2uConsole extends ConsolePanel{
                     // atualiza hora e data de entrega
                     database.UpdateDateDelivered(OrderId, data_fim);
 
-                    //altera o estado para entregue
+                    // altera o estado para entregue
 
                     database.OrderStateUpdate(OrderId, "entregue");
 
@@ -741,21 +701,25 @@ public class Drone2uConsole extends ConsolePanel{
                     path = getPath(OrderId, "regresso");
 
                     // Envio o caminho para o drone
-                    PlanControl pc = buildPlan(event.getVehicle().toString(), -1, getConsole().getMission(),path, vel, height);
+                    height = database.getUAVheight(event.getVehicle().toString());
+                    PlanControl pc = buildPlan(event.getVehicle().toString(), -1, getConsole().getMission(), path, vel,
+                            height);
                     System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
                 }
-                else if( database.getOrderState(OrderId).equals("entregue")) {
+                else if (database.getOrderState(OrderId).equals("entregue")) {
                     // caso o estado da ecomenda já estaja "entregue" então o drone vai fazer loiter ao armazém
-                    // para saber qual o armazém a qual fazer loiter vou ter de ir à rota de regresso do drone 
+                    // para saber qual o armazém a qual fazer loiter vou ter de ir à rota de regresso do drone
                     // à última posição e retirar de lá o localização do armazém e manda fazer loiter
                     LocationType[] path;
                     LocationType whareHouse = new LocationType();
 
                     path = getPath(OrderId, "regresso");
 
-                    whareHouse = path[path.length-1];
-
-                    PlanControl pc = buildPlan_loiter(event.getVehicle().toString(), getConsole().getMission(),whareHouse, 10, 700, 25.0);
+                    whareHouse = path[path.length - 1];
+                    
+                    height = database.getUAVheight(event.getVehicle().toString());
+                    PlanControl pc = buildPlan_loiter(event.getVehicle().toString(), getConsole().getMission(),
+                            whareHouse, 10, height, 25.0);
 
                     System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
 
@@ -768,40 +732,46 @@ public class Drone2uConsole extends ConsolePanel{
         }
     }
 
-
-    @Periodic(millisBetweenUpdates=1000*5) // a cada 5segundos é chamada a função
+    @Periodic(millisBetweenUpdates = 1000 * 5) // a cada 5segundos é chamada a função
     public void checkVehicles() {
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
         // significa que algum UAV deixou de estar em serviço
-        if(vehicles_list.length < UAV_map.size())
-        {
+        if (vehicles_list.length < UAV_map.size()) {
             Vector<String> aux = new Vector<>();
-            
-            for(int i=0; i<vehicles_list.length; i++) {
+
+            for (int i = 0; i < vehicles_list.length; i++) {
                 aux.add(vehicles_list[i].getName());
             }
             
-            for(String uav_name: UAV_map) {
-                if(aux.indexOf(uav_name)== -1) {
+            Vector<String> toRemove = new Vector<String>();
+
+            for (String uav_name : UAV_map) {
+                if (aux.indexOf(uav_name) == -1) {
                     // significa que deixou de estar em serviço
                     database.UAVstateUpdate(uav_name, "FALSE");
+                    toRemove.add(uav_name);
                 }
-                
             }
-           
+            
+            // remove do map de UAVs
+            
+            for(String uav_name: toRemove) {
+                UAV_map.remove(UAV_map.indexOf(uav_name));
+                System.out.println("UAV "+uav_name +" removido");
+            }
         }
-        
+
         // faz loiter a um novo veículo
-        for(int i=0; i<vehicles_list.length; i++) {
-            if( UAV_map.indexOf(vehicles_list[i].getName()) == -1) {
-                System.out.println("Ainda nao contém o UAV: "+vehicles_list[i].getName());
+        for (int i = 0; i < vehicles_list.length; i++) {
+            if (UAV_map.indexOf(vehicles_list[i].getName()) == -1) {
+                System.out.println("Ainda nao contém o UAV: " + vehicles_list[i].getName());
                 UAV_map.add(vehicles_list[i].getName());
 
                 // coloca em loiter num armazém
 
                 // chamada da função para conetar à base de dados
-                if(!database.isConnected()) {
+                if (!database.isConnected()) {
                     database.connect();
                     database.setSchema();
                 }
@@ -809,39 +779,31 @@ public class Drone2uConsole extends ConsolePanel{
                 LocationType armazem_loc = new LocationType();
 
                 armazem_loc = database.getWarehouseLoc();
-
-                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(),armazem_loc, 10, 700, 25.0);
+                
+                height = database.getUAVheight(vehicles_list[i].getName());
+                System.out.println("Altura: "+height);
+                
+                PlanControl pc = buildPlan_loiter(vehicles_list[i].getName(), getConsole().getMission(), armazem_loc,
+                        10, height, 25.0);
 
                 System.out.println(sendPlanToVehicle(vehicles_list[i].getName(), getConsole(), pc));
 
-                //atualiza localização na base de dados
+                // atualiza localização na base de dados
                 int UAV_id = database.getDroneId(vehicles_list[i].getName().toString());
                 database.InserUAVlocation(UAV_id, armazem_loc);
 
-                //coloca a hora e data de inicio da entrega
-                //                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                //                Date date = new Date();
-                //
-                //                String[] data_fim;
-                //
-                //                data_fim = dateFormat.format(date).split(" ");
-                //
-                //                System.out.println("hora: "+data_fim[1]);
-                //                System.out.println("data: "+data_fim[0]);
             }
         }
     }
 
-
     /**
-     * Função que verifica se alguma encomenda está pronta para ser 
-     * enviada
+     * Função que verifica se alguma encomenda está pronta para ser enviada
      */
-    @Periodic(millisBetweenUpdates=1000*10) // a cada 10segundos é chamada a função
+    @Periodic(millisBetweenUpdates = 1000 * 10) // a cada 10segundos é chamada a função
     public void check_new_Orders() {
 
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
+        if (!database.isConnected()) {
             database.connect();
             database.setSchema();
         }
@@ -849,7 +811,6 @@ public class Drone2uConsole extends ConsolePanel{
         // antes de enviar o drone verificar condições meteorológicas
 
         double[] weather_info = check_weather();
-
 
         /*
          * Temperatura entre -10graus e 50graus
@@ -860,60 +821,63 @@ public class Drone2uConsole extends ConsolePanel{
          * 
          */
 
-//        if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
-            System.out.println("Condições atmosféricas dentro dos limites");
-            Vector<Integer> Orders;
+        // if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
+        System.out.println("Condições atmosféricas dentro dos limites");
+        Vector<Integer> Orders;
 
-            Orders = database.getNewOrders();
+        Orders = database.getNewOrders();
 
-            for(Integer id : Orders) {
-                System.out.println(id);
+        for (Integer id : Orders) {
+            System.out.println(id);
 
-                // ver o caminho que a entrega tem de fazer
-                String drone;
-                LocationType[] path;
+            // ver o caminho que a entrega tem de fazer
+            String drone;
+            LocationType[] path;
 
-                drone = database.getDroneForOrder(id);
+            drone = database.getDroneForOrder(id);
 
+            /*
+             * Antes de enviar o drone verififar mesmo a disponibilidade dele
+             *
+             */
+            if (database.getUAVavailability(database.getDroneId(drone))) {
+                System.out.println("drone disponivel");
+                path = getPath(id, "entrega");
+                
+                height = database.getUAVheight(drone);
 
-                /* Antes de enviar o drone verififar mesmo a disponibilidade dele
-                 *
-                 * */
-                if (database.getUAVavailability(database.getDroneId(drone))) {
-                    path = getPath(id, "entrega");
+                PlanControl pc = buildPlan(drone, id, getConsole().getMission(), path, vel, height);
 
-                    PlanControl pc = buildPlan(drone, id, getConsole().getMission(),path, vel, height);
+                System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
 
-                    System.out.println(sendPlanToVehicle(drone, getConsole(), pc));
+                // tenho de inserir na tabela entrega
 
-                    //tenho de inserir na tabela entrega
+                int DroneId = database.getDroneId(drone);
 
-                    int DroneId = database.getDroneId(drone);
+                database.InsertEntrega(id, DroneId, "TRUE");
 
-                    database.InsertEntrega(id, DroneId, "TRUE");
+                // atualiza data e hora de envio
 
-                    // atualiza data e hora de envio
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
 
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                    Date date = new Date();
+                String[] data_envio;
 
-                    String[] data_envio;
+                data_envio = dateFormat.format(date).split(" ");
 
-                    data_envio = dateFormat.format(date).split(" ");
+                database.UpdateDateSend(id, data_envio);
 
-                    database.UpdateDateSend(id, data_envio);
-
-                    // atualiza o estado da encomenda
-                    database.OrderStateUpdate(id, "enviada");
-                }
-                else
-                    System.out.println(drone+" não está disponivel");
-
+                // atualiza o estado da encomenda
+                database.OrderStateUpdate(id, "enviada");
             }
-//        }
-//        else
-//            System.out.println("Condições atomosféricas adversas");
-        
+            else
+                System.out.println(drone + " não está disponivel");
+
+        }
+        // }
+        // else
+        // System.out.println("Condições atomosféricas adversas");
+
     }
 
     /**
@@ -923,20 +887,22 @@ public class Drone2uConsole extends ConsolePanel{
 
         check_new_Orders();
 
-        /*LocationType[] path;
-
-        path = getPath(251);
-
-        PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
-
-        System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
-
-        database.OrderStateUpdate(151, "enviada");*/
+        /*
+         * LocationType[] path;
+         * 
+         * path = getPath(251);
+         * 
+         * PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
+         * 
+         * System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
+         * 
+         * database.OrderStateUpdate(151, "enviada");
+         */
 
     }
 
-//    @Subscribe
-//    public void on2(ConsoleEventVehicleStateChanged event) {
-//        System.out.println(event.getState().toString());
-//    }
+    // @Subscribe
+    // public void on2(ConsoleEventVehicleStateChanged event) {
+    // System.out.println(event.getState().toString());
+    // }
 }

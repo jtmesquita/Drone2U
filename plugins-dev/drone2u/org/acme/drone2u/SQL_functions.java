@@ -150,7 +150,7 @@ public class SQL_functions {
             return rsaux.getInt("id_wr");
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getId_last_order "+e);
             return -1;
         }
     }
@@ -227,7 +227,7 @@ public class SQL_functions {
             return location;
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getWarehouseLoc "+e);
             return null;
         }
     }
@@ -248,7 +248,7 @@ public class SQL_functions {
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("InserUAVlocation "+e);
         }
     }
 
@@ -278,7 +278,7 @@ public class SQL_functions {
 
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getPathForOrder "+e);
             return null;
         }
     }
@@ -308,7 +308,7 @@ public class SQL_functions {
 
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getPathToWhareHouse "+e);
             return null;
         }
     }
@@ -331,7 +331,7 @@ public class SQL_functions {
             return 1;
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("OrderStateUpdate "+e);
             return 0;
         }
 
@@ -354,7 +354,7 @@ public class SQL_functions {
             return rsaux.getString("estado");
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getOrderState "+e);
             return null;
         }
     }
@@ -371,7 +371,7 @@ public class SQL_functions {
             query = "UPDATE drone SET  disponibilidade = "+State+", reservado= 'FALSE' WHERE nome_drone = '"+UAV_name+"'";
         }
         else {
-            query = "UPDATE drone SET  disponibilidade = "+State+" WHERE nome_drone = '"+UAV_name+"'";
+            query = "UPDATE drone SET  disponibilidade = "+State+", reservado = 'TRUE' WHERE nome_drone = '"+UAV_name+"'";
         }
 
 
@@ -381,7 +381,7 @@ public class SQL_functions {
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("UAVstateUpdate "+e);
         }
     }
 
@@ -399,7 +399,7 @@ public class SQL_functions {
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("UpdateDateSend "+e);
         }
 
     }
@@ -413,7 +413,7 @@ public class SQL_functions {
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("UpdateDateDelivered "+e);
         }
 
     }
@@ -435,7 +435,7 @@ public class SQL_functions {
             return rsaux.getString("nome_drone");
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getDroneForOrder "+e);
             return null;
         }
     }
@@ -458,7 +458,7 @@ public class SQL_functions {
             return rsaux.getInt("id_e");
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getLastOrderIdDrone "+e);
             return -1;
         }
     }
@@ -480,7 +480,7 @@ public class SQL_functions {
             return rsaux.getInt("id_d");
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getDroneId "+e);
             return -1;
         }
     }
@@ -501,11 +501,31 @@ public class SQL_functions {
             return rsaux.getBoolean("disponibilidade");
         }
         catch (Exception e) {
-            System.err.println(e);
+            System.err.println("getUAVavailability "+e);
             return false;
         }
     }
 
+    /**
+     * Retorna a altura que um drone tem de circular
+     * @param UAV_name
+     * @return height that the drone must run
+     */
+    public int getUAVheight(String UAV_name) {
+        ResultSet rsaux;
+        String query = "SELECT altura FROM drone WHERE nome_drone = '"+UAV_name+"'";
+        rsaux = execute(query);
+
+        try {
+            rsaux.next();
+            return rsaux.getInt("altura");
+        }
+        catch (Exception e) {
+            System.err.println("getUAVheight "+e);
+            return 0;
+        }
+    }
+    
     /**
      * Insere na tabela entrega os dados respetivos
      * @param Order_id
@@ -520,7 +540,7 @@ public class SQL_functions {
             stmt.executeUpdate(query);
 
         } catch (SQLException e) {
-            System.err.println(e);
+            System.err.println("InsertEntrega "+e);
         }
 
     }
@@ -545,7 +565,7 @@ public class SQL_functions {
             return Orders;
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getNewOrders "+e);
             return null;
         }
     }
@@ -570,7 +590,7 @@ public class SQL_functions {
             return names;
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getUavsNames "+e);
             return null;
         }
     }
@@ -591,7 +611,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getFreeUavs "+e);
             return -1;
         }
     }
@@ -613,7 +633,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getBusyUavs "+e);
             return -1;
         }
     }
@@ -636,7 +656,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getPendingSend "+e);
             return -1;
         }
     }
@@ -658,7 +678,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getPendingDelivery "+e);
             return -1;
         }
     }
@@ -680,7 +700,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getSuccessfulDeliveries "+e);
             return -1;
         }
     }
@@ -702,7 +722,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getOperationalUavs"+e);
             return -1;
         }
     }
@@ -724,7 +744,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getFailureUavs "+e);
             return -1;
         }
     }
@@ -747,7 +767,7 @@ public class SQL_functions {
             return Integer.parseInt(res);
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getTotalUavs "+e);
             return -1;
         }
     }
@@ -825,7 +845,7 @@ public class SQL_functions {
             return table;
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getEncomendas "+e);
             return null;
         }
     }
@@ -884,7 +904,7 @@ public class SQL_functions {
             return table;
         }
         catch (Exception e){
-            System.err.println(e);
+            System.err.println("getEncomendas "+e);
             return null;
         }
     }

@@ -862,13 +862,8 @@ public class PainelInfo extends JPanel {
         uavsFalhaText.setText(String.valueOf((int)failureUavs));
         
         entregasSucessoText.setText(String.valueOf(successfulDeliveries));
-        entregasFalhaText.setText("0");
-        
-        System.out.println("busy = "+busyUavs);        
-        System.out.println("operational = "+operationalUavs);
-        
-        
-        
+        entregasFalhaText.setText("0");    
+                
         if(busyUavs+freeUavs == 0)
             progressBarOcupacao.setValue(100);
         else
