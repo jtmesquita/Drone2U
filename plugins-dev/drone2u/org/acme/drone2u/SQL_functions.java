@@ -808,11 +808,11 @@ public class SQL_functions {
         String query = "SELECT nome_drone, " +
                 "encomenda.id_e," +
                 "armazem.nome as arm_nome, " +
-                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
+                "armazem.morada_arm, " +
                 "pt_recol.nome as pt_recol_nome, " +
-                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
+                "pt_recol.morada_arm as morada_pt_recol, " +
                 "pt_entr.nome as pt_entr_nome, " +
-                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "pt_entr.morada_arm as morada_pt_entr, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
                 "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
                 "FROM wprota  " +
@@ -831,11 +831,11 @@ public class SQL_functions {
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("arm_nome"));
-                row.add(rs1.getString("loc_inicial_arm"));
+                row.add(rs1.getString("morada_arm"));
                 row.add(rs1.getString("pt_recol_nome"));
-                row.add(rs1.getString("loc_inicial_ponto"));
+                row.add(rs1.getString("morada_pt_recol"));
                 row.add(rs1.getString("pt_entr_nome"));
-                row.add(rs1.getString("loc_final"));
+                row.add(rs1.getString("morada_pt_entr"));
                 row.add(rs1.getString("data_env"));
                 row.add(rs1.getString("data_entr"));
 
@@ -866,11 +866,11 @@ public class SQL_functions {
         String query = "SELECT nome_drone, " +
                 "encomenda.id_e," +
                 "armazem.nome as arm_nome, " +
-                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
+                "armazem.morada_arm, " +
                 "pt_recol.nome as pt_recol_nome, " +
-                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
+                "pt_recol.morada_arm as morada_pt_recol, " +
                 "pt_entr.nome as pt_entr_nome, " +
-                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
+                "pt_entr.morada_arm as morada_pt_entr, " +
                 "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
                 "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
                 "FROM wprota  " +
@@ -890,11 +890,11 @@ public class SQL_functions {
                 row.add(rs1.getString("nome_drone"));
                 row.add(rs1.getString("id_e"));
                 row.add(rs1.getString("arm_nome"));
-                row.add(rs1.getString("loc_inicial_arm"));
+                row.add(rs1.getString("morada_arm"));
                 row.add(rs1.getString("pt_recol_nome"));
-                row.add(rs1.getString("loc_inicial_ponto"));
+                row.add(rs1.getString("morada_pt_recol"));
                 row.add(rs1.getString("pt_entr_nome"));
-                row.add(rs1.getString("loc_final"));
+                row.add(rs1.getString("morada_pt_entr"));
                 row.add(rs1.getString("data_env"));
                 row.add(rs1.getString("data_entr"));
 
