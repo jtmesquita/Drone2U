@@ -43,13 +43,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
+import com.google.common.eventbus.Subscribe;
+
+import pt.lsts.neptus.console.events.ConsoleEventVehicleStateChanged;
 import pt.lsts.neptus.types.coord.LocationType;
 
 /**
- * @author pedro
+ * @author João Mesquita e Pedro Guedes
  *
  */
-public class SQL_functions {
+public class Database {
 
     private final String url = "jdbc:postgresql://192.168.50.131/ee12299";
     private final String user = "ee12299";
@@ -71,7 +74,8 @@ public class SQL_functions {
         }
 
         return con;
-    }
+    }  
+   
 
     /**
      * Verifica se já foi estabelecida uma conexão a base de dados
@@ -138,7 +142,7 @@ public class SQL_functions {
     /**
      * Vai buscar o ultimo id da lista de encomendas prontas a serem enviadas
      */
-    public int getId_last_order() {
+    public int getIdLastOrder() {
         ResultSet rsaux;
 
         String query = "SELECT id_wr FROM wprota ORDER BY id_wr DESC";     // vai buscar o ultimo id das encomendas
@@ -162,7 +166,7 @@ public class SQL_functions {
      * @param last_id
      * @return
      */
-    public Vector<Integer> get_order_IDs (int last_id) {
+    public Vector<Integer> getOrderIds (int last_id) {
         ResultSet rsaux;
         Vector<Integer> Ids = new Vector<>();
 
@@ -186,7 +190,7 @@ public class SQL_functions {
      * Função que retorna as coordenadas do ponto de entrega para uma encomenda
      * na forma de LocationType
      */
-    public LocationType getLocation_byId(int id) {
+    public LocationType getLocationById(int id) {
         LocationType location = new LocationType();
         ResultSet rsaux;
 
@@ -237,7 +241,7 @@ public class SQL_functions {
      * @param UAV_id
      * @param loc
      */
-    public void InserUAVlocation(int UAV_id, LocationType loc) {
+    public void insertUavLocation(int UAV_id, LocationType loc) {
         String latitude = String.valueOf(loc.getLatitudeDegs());
         String longitude = String.valueOf(loc.getLongitudeDegs());
 
@@ -289,7 +293,7 @@ public class SQL_functions {
      * @param order_id
      * @return path[]
      */
-    public String[] getPathToWhareHouse(int order_id) {
+    public String[] getPathToWareHouse(int order_id) {
         ResultSet rsaux;
 
         String query = "SELECT longitude2, latitude2 FROM wprota WHERE id_wr ="+order_id;
@@ -308,7 +312,7 @@ public class SQL_functions {
 
         }
         catch (Exception e){
-            System.err.println("getPathToWhareHouse "+e);
+            System.err.println("getPathToWareHouse "+e);
             return null;
         }
     }
@@ -321,7 +325,7 @@ public class SQL_functions {
      * @param State
      * @return
      */
-    public int OrderStateUpdate(int order_id, String State) {
+    public int orderStateUpdate(int order_id, String State) {
 
         String query = "UPDATE faz SET  estado = '"+State+"' WHERE id_e = "+order_id;
 
@@ -364,7 +368,7 @@ public class SQL_functions {
      * @param UAV_name
      * @param State
      */
-    public void UAVstateUpdate(String UAV_name, String State){
+    public void uavStateUpdate(String UAV_name, String State){
         String query;
 
         if(State.equals("TRUE")) {
@@ -390,7 +394,7 @@ public class SQL_functions {
      * @param id_encomenda
      * @param data_hora
      */
-    public void UpdateDateSend(int id_encomenda, String[] data_hora) {
+    public void updateDateSend(int id_encomenda, String[] data_hora) {
 
         String query = "UPDATE encomenda SET  data_env = '"+data_hora[0]+"', hora_env = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
 
@@ -404,7 +408,7 @@ public class SQL_functions {
 
     }
 
-    public void UpdateDateDelivered(int id_encomenda, String[] data_hora) {
+    public void updateDateDelivered(int id_encomenda, String[] data_hora) {
 
         String query = "UPDATE encomenda SET  data_entr = '"+data_hora[0]+"', hora_entr = '"+data_hora[1]+"' WHERE id_e ="+id_encomenda;
 
@@ -490,7 +494,7 @@ public class SQL_functions {
      * @param DroneId
      * @return true/false
      */
-    public boolean getUAVavailability(int DroneId) {
+    public boolean getUavAvailability(int DroneId) {
         ResultSet rsaux;
         String query = "SELECT disponibilidade FROM drone WHERE id_d ="+DroneId;
 
@@ -511,7 +515,7 @@ public class SQL_functions {
      * @param UAV_name
      * @return height that the drone must run
      */
-    public int getUAVheight(String UAV_name) {
+    public int getUavHeight(String UAV_name) {
         ResultSet rsaux;
         String query = "SELECT altura FROM drone WHERE nome_drone = '"+UAV_name+"'";
         rsaux = execute(query);
@@ -532,7 +536,7 @@ public class SQL_functions {
      * @param DroneID
      * @param meteo
      */
-    public void InsertEntrega(int Order_id, int DroneID, String meteo) {
+    public void insertDelivery(int Order_id, int DroneID, String meteo) {
         String query = "INSERT INTO entrega (id_d, id_e, cond_meteo) VALUES("+DroneID+", "+Order_id+",'"+meteo+"')";
 
         try {

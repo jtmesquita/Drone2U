@@ -45,7 +45,7 @@ import java.util.Vector;
 import com.google.gson.*;
 import com.google.gson.reflect.*;
 /**
- * @author pedro
+ * @author Pedro Guedes
  *
  */
 public class Weather {

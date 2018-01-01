@@ -1,63 +1,10 @@
-/*
- * Copyright (c) 2004-2017 Universidade do Porto - Faculdade de Engenharia
- * Laboratório de Sistemas e Tecnologia Subaquática (LSTS)
- * All rights reserved.
- * Rua Dr. Roberto Frias s/n, sala I203, 4200-465 Porto, Portugal
- *
- * This file is part of Neptus, Command and Control Framework.
- *
- * Commercial Licence Usage
- * Licencees holding valid commercial Neptus licences may use this file
- * in accordance with the commercial licence agreement provided with the
- * Software or, alternatively, in accordance with the terms contained in a
- * written agreement between you and Universidade do Porto. For licensing
- * terms, conditions, and further information contact lsts@fe.up.pt.
- *
- * Modified European Union Public Licence - EUPL v.1.1 Usage
- * Alternatively, this file may be used under the terms of the Modified EUPL,
- * Version 1.1 only (the "Licence"), appearing in the file LICENSE.md
- * included in the packaging of this file. You may not use this work
- * except in compliance with the Licence. Unless required by applicable
- * law or agreed to in writing, software distributed under the Licence is
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied. See the Licence for the specific
- * language governing permissions and limitations at
- * https://github.com/LSTS/neptus/blob/develop/LICENSE.md
- * and http://ec.europa.eu/idabc/eupl.html.
- *
- * For more information please see <http://lsts.fe.up.pt/neptus>.
- *
- * Author: joao
- * 09/12/2017
- */
-package org.acme.drone2u;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+ package org.acme.drone2u;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
-
-import pt.lsts.neptus.comm.manager.imc.ImcSystem;
-import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
-import pt.lsts.neptus.plugins.update.Periodic;
-import pt.lsts.neptus.util.ImageUtils;
-
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.text.DecimalFormat;
@@ -65,34 +12,49 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
-import java.awt.event.ActionEvent;
-import java.awt.Color;
-import javax.swing.JLabel;
-import javax.swing.ImageIcon;
-import java.awt.Font;
-import java.awt.Image;
-
-import javax.swing.SwingConstants;
-import java.awt.SystemColor;
-import javax.swing.JDesktopPane;
-import javax.swing.JList;
-import javax.swing.AbstractListModel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextPane;
-import javax.swing.JToggleButton;
-import javax.swing.JTree;
-import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JSeparator;
-import javax.swing.JToolBar;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.table.DefaultTableModel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
+import com.google.common.eventbus.Subscribe;
 
-public class PainelInfo extends JPanel {
+import pt.lsts.neptus.comm.manager.imc.ImcSystem;
+import pt.lsts.neptus.comm.manager.imc.ImcSystemsHolder;
+import pt.lsts.neptus.console.ConsoleLayout;
+import pt.lsts.neptus.console.ConsolePanel;
+import pt.lsts.neptus.console.events.ConsoleEventVehicleStateChanged;
+import pt.lsts.neptus.plugins.PluginDescription;
+import pt.lsts.neptus.plugins.Popup;
+import pt.lsts.neptus.plugins.Popup.POSITION;
+import pt.lsts.neptus.plugins.update.Periodic;
+import pt.lsts.neptus.util.ImageUtils;
+import javax.swing.ScrollPaneConstants;
+
+/**
+ * @author João Mesquita
+ *
+ */
+public class GUI extends JPanel {
     private JTable tableEncomendas;
     private JTable tableEstadoUavs;
     private JTextField uavsOpText;
@@ -103,7 +65,7 @@ public class PainelInfo extends JPanel {
     private JTextField humidadeText;
     private JTextField ventoText;
     private JComboBox<String> comboBoxFiltroUav;
-    private SQL_functions database;
+    private Database db;
     private JTextField weatherDescriptionText;
     private JTextField uavsLivresText;
     private JTextField uavsOcupadosText;
@@ -112,12 +74,13 @@ public class PainelInfo extends JPanel {
     private JProgressBar progressBarOcupacao;
     private JProgressBar progressBarFalhas;
     private TimeSeries series;
-
+       
     /**
-     * Create the panel.
+     * Inicializa os componentes da GUI do plugin
      */
-    public PainelInfo() {
-        database = new SQL_functions();      
+    public GUI() {
+        
+        db = new Database();       
         
         setForeground(Color.RED);
         setBackground(new Color(102, 102, 102));
@@ -255,18 +218,18 @@ public class PainelInfo extends JPanel {
                     .addContainerGap()
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 1077, Short.MAX_VALUE)
+                            .addComponent(lblPainelInfo, GroupLayout.DEFAULT_SIZE, 1080, Short.MAX_VALUE)
                             .addGap(12)
                             .addComponent(drone2uLogo))
                         .addGroup(groupLayout.createSequentialGroup()
                             .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addComponent(panel, 0, 0, Short.MAX_VALUE)
-                                .addComponent(panelCondMeteo, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(panelFalhas, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(panel, GroupLayout.PREFERRED_SIZE, 293, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-                                .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE)
-                                .addComponent(panelEncomendas, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE))))
+                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                                .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE)
+                                .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 864, Short.MAX_VALUE))))
                     .addContainerGap())
         );
         groupLayout.setVerticalGroup(
@@ -279,15 +242,15 @@ public class PainelInfo extends JPanel {
                     .addPreferredGap(ComponentPlacement.UNRELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addComponent(panelEstadoUavs, GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                        .addComponent(panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
                         .addGroup(groupLayout.createSequentialGroup()
-                            .addComponent(panelCondMeteo, GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
+                            .addComponent(panelCondMeteo, GroupLayout.PREFERRED_SIZE, 165, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, Short.MAX_VALUE))
-                        .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
-                    .addGap(10))
+                            .addComponent(panelFalhas, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(panelEncomendas, GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE))
+                    .addContainerGap())
         );
         panel.setLayout(new CardLayout(0, 0));
         
@@ -347,7 +310,7 @@ public class PainelInfo extends JPanel {
         gl_panelOcupacao.setHorizontalGroup(
             gl_panelOcupacao.createParallelGroup(Alignment.TRAILING)
                 .addGroup(gl_panelOcupacao.createSequentialGroup()
-                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING, false)
                         .addGroup(gl_panelOcupacao.createSequentialGroup()
                             .addContainerGap()
                             .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 269, GroupLayout.PREFERRED_SIZE))
@@ -355,11 +318,9 @@ public class PainelInfo extends JPanel {
                             .addGap(49)
                             .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(ComponentPlacement.UNRELATED)
-                            .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGap(46)))
+                            .addComponent(button)))
                     .addGap(12))
                 .addGroup(gl_panelOcupacao.createSequentialGroup()
-                    .addContainerGap(32, Short.MAX_VALUE)
                     .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
                         .addComponent(lblUavsLivres, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
                         .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.LEADING, false)
@@ -379,10 +340,10 @@ public class PainelInfo extends JPanel {
             gl_panelOcupacao.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelOcupacao.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE)
+                    .addGroup(gl_panelOcupacao.createParallelGroup(Alignment.BASELINE, false)
                         .addGroup(gl_panelOcupacao.createSequentialGroup()
                             .addGap(2)
-                            .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(button))
                         .addComponent(lblOcupacao, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addComponent(progressBarOcupacao, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
@@ -517,9 +478,9 @@ public class PainelInfo extends JPanel {
             gl_panelCondMeteo.createParallelGroup(Alignment.LEADING)
                 .addGroup(gl_panelCondMeteo.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(lblCondiesMet, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                    .addComponent(lblCondiesMet, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                     .addGap(1)
-                    .addComponent(weatherDescriptionText, GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)
+                    .addComponent(weatherDescriptionText, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblTemperatura, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
@@ -533,8 +494,8 @@ public class PainelInfo extends JPanel {
                             .addGap(5)
                             .addComponent(ventoText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                     .addPreferredGap(ComponentPlacement.RELATED)
-                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblHumidade, GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                    .addGroup(gl_panelCondMeteo.createParallelGroup(Alignment.BASELINE, false)
+                        .addComponent(lblHumidade, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                         .addGroup(gl_panelCondMeteo.createSequentialGroup()
                             .addGap(5)
                             .addComponent(humidadeText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
@@ -584,6 +545,7 @@ public class PainelInfo extends JPanel {
         panelEstadoUavs.setLayout(gl_panelEstadoUavs);
         
         JScrollPane scrollPaneEncomendas = new JScrollPane();
+        scrollPaneEncomendas.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         comboBoxFiltroUav = new JComboBox<>();        
         comboBoxFiltroUav.setForeground(Color.BLACK);
@@ -592,12 +554,12 @@ public class PainelInfo extends JPanel {
         
         
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
-            Connection conn = database.connect();
-            database.setSchema();       
+        if(!db.isConnected()) {
+            Connection conn = db.connect();
+            db.setSchema();       
         }
         
-        ArrayList<String> names_db = database.getUavsNames();
+        ArrayList<String> names_db = db.getUavsNames();
         names_db.add(0, "All");
         String[] names = Arrays.copyOf(names_db.toArray(), names_db.toArray().length, String[].class);
         comboBoxFiltroUav.setModel(new DefaultComboBoxModel<String>(names));
@@ -650,12 +612,12 @@ public class PainelInfo extends JPanel {
                 "ID UAV", "ID Encom.", "Localiza\u00E7\u00E3o inicial", "Localiza\u00E7\u00E3o final", "Data/hora envio", "Data/hora entrega"
             }
         ));
-        tableEncomendas.getColumnModel().getColumn(0).setPreferredWidth(15);
-        tableEncomendas.getColumnModel().getColumn(1).setPreferredWidth(30);
-        tableEncomendas.getColumnModel().getColumn(2).setPreferredWidth(160);
-        tableEncomendas.getColumnModel().getColumn(3).setPreferredWidth(160);
-        tableEncomendas.getColumnModel().getColumn(4).setPreferredWidth(125);
-        tableEncomendas.getColumnModel().getColumn(5).setPreferredWidth(125);
+        tableEncomendas.getColumnModel().getColumn(0).setPreferredWidth(30);
+        tableEncomendas.getColumnModel().getColumn(1).setPreferredWidth(40);
+        tableEncomendas.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tableEncomendas.getColumnModel().getColumn(3).setPreferredWidth(120);
+        tableEncomendas.getColumnModel().getColumn(4).setPreferredWidth(145);
+        tableEncomendas.getColumnModel().getColumn(5).setPreferredWidth(145);
         scrollPaneEncomendas.setViewportView(tableEncomendas);
         panelEncomendas.setLayout(gl_panelEncomendas);
         setLayout(groupLayout);
@@ -714,13 +676,12 @@ public class PainelInfo extends JPanel {
     
     /**
      * Atualiza a tabela de encomendas
-     */
-   
+     */   
     public void refreshTableEncomendas () {
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
-            Connection conn = database.connect();
-            database.setSchema();       
+        if(!db.isConnected()) {
+            Connection conn = db.connect();
+            db.setSchema();       
         }
         
         Object oselected = comboBoxFiltroUav.getSelectedItem();
@@ -728,9 +689,9 @@ public class PainelInfo extends JPanel {
         ArrayList<ArrayList<String>> table_db;
         
         if(filter.equals("All"))
-            table_db = database.getEncomendas();
+            table_db = db.getEncomendas();
         else
-            table_db = database.getEncomendas(filter);
+            table_db = db.getEncomendas(filter);
         
         DefaultTableModel tabelaEncomendas = (DefaultTableModel) tableEncomendas.getModel();
         Object rowDataEncomendas[] = new Object[6];
@@ -765,7 +726,7 @@ public class PainelInfo extends JPanel {
     
     /**
      * Atualiza a tabela de estados dos uavs
-     */
+     */   
     public void refreshTableEstadoUavs () {
 
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
@@ -796,7 +757,7 @@ public class PainelInfo extends JPanel {
     
     /**
      * Atualizar os componentes da GUI relacionados com a meteorologia 
-     */
+     */   
     public void refreshWeather() {
                
         Weather data = new Weather();
@@ -822,12 +783,12 @@ public class PainelInfo extends JPanel {
     
     /**
      * Atualizar os restantes componentes da GUI (barras de utilização e textos)
-     */
+     */   
     public void refreshOther () {        
         // chamada da função para conetar à base de dados
-        if(!database.isConnected()) {
-            Connection conn = database.connect();
-            database.setSchema();       
+        if(!db.isConnected()) {
+            Connection conn = db.connect();
+            db.setSchema();       
         }
         
         //ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
@@ -835,14 +796,13 @@ public class PainelInfo extends JPanel {
         float freeUavs, busyUavs, failureUavs, operationalUavs;
         int pendingDelivery, pendingSend, successfulDeliveries;        
 
-        freeUavs = database.getFreeUavs(); //uavs livres
-        busyUavs = database.getBusyUavs();   //uavs ocupados 
-        pendingDelivery = database.getPendingDelivery();
-        pendingSend = database.getPendingSend();
-        failureUavs = database.getFailureUavs();
-        operationalUavs = database.getOperationalUavs();
-        successfulDeliveries = database.getSuccessfulDeliveries();
-        
+        freeUavs = db.getFreeUavs(); //uavs livres
+        busyUavs = db.getBusyUavs();   //uavs ocupados 
+        pendingDelivery = db.getPendingDelivery();
+        pendingSend = db.getPendingSend();
+        failureUavs = db.getFailureUavs();
+        operationalUavs = db.getOperationalUavs();
+        successfulDeliveries = db.getSuccessfulDeliveries();        
                 
         /*uavsLivresText.setText(String.valueOf(vehicles_list.length));
         
@@ -852,6 +812,7 @@ public class PainelInfo extends JPanel {
             else
                 busyUavs++;
         }*/       
+        
         uavsLivresText.setText(String.valueOf((int)freeUavs));
         uavsOcupadosText.setText(String.valueOf((int)busyUavs));
         
@@ -875,5 +836,7 @@ public class PainelInfo extends JPanel {
             progressBarFalhas.setValue((int)(failureUavs/(failureUavs+operationalUavs)*100));
         
         series.add(new Millisecond(), (busyUavs/(busyUavs+freeUavs)*100));
-    }    
+    }
+   
+
 }
