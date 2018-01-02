@@ -91,10 +91,10 @@ public class ProcessOrders extends ConsolePanel {
     Database db = new Database();
     Weather data = new Weather();
     Vector<String> UAV_map = new Vector<String>(); // na primeira posição contém o nome do UAV que está disponível no sistema                                                
-  
+
     private GUI guiPanel = new GUI();
     private JFrame guiFrame;
-    
+
     int vel = 40;
     int height = 700;
     int last_order_id = 256;
@@ -107,16 +107,16 @@ public class ProcessOrders extends ConsolePanel {
     public void cleanSubPanel() {
         // TODO Auto-generated method stub
     }
-    
+
     /**
      * Inicializa a GUI do plugin.
      */
     @Override
     public void initSubPanel() {
         removeAll();
-        
+
         setBackground(Color.GRAY);
-        
+
         JLabel drone2uLogo = new JLabel("");
         drone2uLogo.setFont(new Font("DejaVu Sans", Font.BOLD, 20));
         drone2uLogo.setBackground(Color.GRAY);
@@ -124,34 +124,34 @@ public class ProcessOrders extends ConsolePanel {
         ImageIcon drone2u = ImageUtils.getScaledIcon("images/drone2u.png", 157, 117);
         drone2uLogo.setIcon(drone2u);
         drone2uLogo.setOpaque(true);
-        
+
         JLabel lblPlugin = new JLabel("Plugin");
         lblPlugin.setOpaque(true);
         lblPlugin.setHorizontalAlignment(SwingConstants.CENTER);
         lblPlugin.setForeground(Color.BLACK);
         lblPlugin.setFont(new Font("Monospaced", Font.BOLD, 16));
         lblPlugin.setBackground(Color.GRAY);
-        
+
         JButton btnOpen = new JButton("Open GUI...");
-        
+
         // Cria o JFrame para a GUI quando o botão é pressionado 
         btnOpen.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
+
                 guiFrame = new JFrame();
                 guiFrame.add(guiPanel);
                 guiFrame.setSize(1120, 695);
                 guiFrame.setVisible(true);
                 guiFrame.setResizable(true);            
-                
+
             }
         });
-        
-        
+
+
         btnOpen.setForeground(Color.WHITE);
         btnOpen.setBackground(Color.DARK_GRAY);
         btnOpen.setFont(new Font("Monospaced", Font.BOLD, 20));
-        
+
         JLabel lblSeai = new JLabel("Equipa C - SEAI (2017/2018) - FEUP");
         lblSeai.setOpaque(true);
         lblSeai.setHorizontalAlignment(SwingConstants.CENTER);
@@ -160,37 +160,37 @@ public class ProcessOrders extends ConsolePanel {
         lblSeai.setBackground(Color.GRAY);
         GroupLayout groupLayout = new GroupLayout(this);
         groupLayout.setHorizontalGroup(
-            groupLayout.createParallelGroup(Alignment.TRAILING)
+                groupLayout.createParallelGroup(Alignment.TRAILING)
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(groupLayout.createSequentialGroup()
-                            .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-                                .addComponent(btnOpen, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                                .addComponent(lblSeai, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
-                            .addContainerGap())
-                        .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-                            .addComponent(drone2uLogo)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(lblPlugin, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-                            .addGap(28))))
-        );
+                        .addContainerGap()
+                        .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                                .addGroup(groupLayout.createSequentialGroup()
+                                        .addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+                                                .addComponent(btnOpen, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                                                .addComponent(lblSeai, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
+                                        .addContainerGap())
+                                .addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+                                        .addComponent(drone2uLogo)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(lblPlugin, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+                                        .addGap(28))))
+                );
         groupLayout.setVerticalGroup(
-            groupLayout.createParallelGroup(Alignment.LEADING)
+                groupLayout.createParallelGroup(Alignment.LEADING)
                 .addGroup(groupLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-                        .addComponent(drone2uLogo)
-                        .addComponent(lblPlugin, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
-                    .addGap(18)
-                    .addComponent(btnOpen, GroupLayout.PREFERRED_SIZE, 41, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(ComponentPlacement.RELATED)
-                    .addComponent(lblSeai, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addContainerGap()
+                        .addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+                                .addComponent(drone2uLogo)
+                                .addComponent(lblPlugin, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
+                        .addGap(18)
+                        .addComponent(btnOpen, GroupLayout.PREFERRED_SIZE, 41, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(lblSeai, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                );
         setLayout(groupLayout);
     }
-    
+
     @Periodic(millisBetweenUpdates = 1000) // a cada 1 segundo é chamada a função
     public void updateGui() {
         guiPanel.refreshTableEstadoUavs();
@@ -293,7 +293,7 @@ public class ProcessOrders extends ConsolePanel {
                     }
 
                     addedTransitions
-                            .add(neptusPlan.getGraph().addTransition(lastMan.getId(), point.getId(), defaultCondition));
+                    .add(neptusPlan.getGraph().addTransition(lastMan.getId(), point.getId(), defaultCondition));
                 }
 
                 neptusPlan.getGraph().addManeuver(point);
@@ -304,12 +304,12 @@ public class ProcessOrders extends ConsolePanel {
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
         pc.setRequestId(IMCSendMessageUtils.getNextRequestId()); // IMCSendMessageUtils.... é apenas para fins de
-                                                                 // sincronização
+        // sincronização
         pc.setPlanId(neptusPlan.getId());
         // System.out.println(neptusPlan.asIMCPlan().asXml(true));
 
         PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan()); // criação da mensagem IMC para ser
-                                                                                 // mandada para p drone
+        // mandada para p drone
 
         SetEntityParameters heightc = new SetEntityParameters();
         heightc.setName("Height Control");
@@ -324,7 +324,7 @@ public class ProcessOrders extends ConsolePanel {
         SetEntityParameters pathController = new SetEntityParameters();
         pathController.setName("Path Control");
         pathController
-                .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
+        .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
 
         // alteração da configuração do drone de modo a desligar a opção Ardupilot
         // e ativação das opções Height control e PathControl
@@ -372,12 +372,12 @@ public class ProcessOrders extends ConsolePanel {
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
         pc.setRequestId(IMCSendMessageUtils.getNextRequestId()); // IMCSendMessageUtils.... é apenas para fins de
-                                                                 // sincronização
+        // sincronização
         pc.setPlanId(neptusPlan.getId());
         // System.out.println(neptusPlan.asIMCPlan().asXml(true));
 
         PlanSpecification pSpec = new PlanSpecification(neptusPlan.asIMCPlan()); // criação da mensagem IMC para ser
-                                                                                 // mandada para p drone
+        // mandada para p drone
 
         SetEntityParameters heightc = new SetEntityParameters();
         heightc.setName("Height Control");
@@ -392,7 +392,7 @@ public class ProcessOrders extends ConsolePanel {
         SetEntityParameters pathController = new SetEntityParameters();
         pathController.setName("Path Control");
         pathController
-                .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
+        .setParams(Arrays.asList(new EntityParameter[] { new EntityParameter("Use controller", "true") }));
 
         // alteração da configuração do drone de modo a desligar a opção Ardupilot
         // e ativação das opções Height control e PathControl
@@ -455,8 +455,8 @@ public class ProcessOrders extends ConsolePanel {
 
                 destArray[0] = warehouse;
                 destArray[1] = final_location;
-                
-                
+
+
 
                 PlanControl pc = buildPlan("x8-02", id, getConsole().getMission(), destArray, vel, height);
 
@@ -581,7 +581,7 @@ public class ProcessOrders extends ConsolePanel {
         String raw_maneuver = null;
         String[] maneuver_aux;
         String maneuver = "Vehicle unavailable";
-        
+
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
         // chamada da função para conetar à base de dados
@@ -589,20 +589,20 @@ public class ProcessOrders extends ConsolePanel {
             db.connect();
             db.setSchema();
         }       
-        
+
         for (int i = 0; i < vehicles_list.length; i++) {
             if (vehicles_list[i].getActivePlan() == null) {
                 maneuver = "No maneuvers";
             }
             else {
                 raw_maneuver = vehicles_list[i].getActivePlan().toString(); // vem no formato: pl_btf1ym|Man:GOTO1
-                                                                            // (nome_plano|man: nome_manobra)
+                // (nome_plano|man: nome_manobra)
                 maneuver_aux = raw_maneuver.split(":");
 
                 maneuver = maneuver_aux[1];
             }
 
-             System.out.println("Manobra: " + maneuver);
+            //System.out.println("Manobra: " + maneuver);
             // Verificar se a manobra é Loiter para verififar disponibilidade do drone
             if (maneuver.equals("Loiter")) {
                 db.uavStateUpdate(vehicles_list[i].getName(), "TRUE");
@@ -657,11 +657,27 @@ public class ProcessOrders extends ConsolePanel {
                     LocationType[] path;
                     path = getPath(OrderId, "regresso");
 
-                    // Envio o caminho para o drone
-                    height = db.getUavHeight(event.getVehicle().toString());
-                    PlanControl pc = buildPlan(event.getVehicle().toString(), -1, getConsole().getMission(), path, vel,
-                            height);
-                    System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                    // significa que fica a fazer loiter logo no armazém
+                    if(path.length == 1) {
+                        // atualiza na base de dados a nova localização do drone
+                        int UAV_id = db.getDroneId(event.getVehicle().toString());
+                        db.insertUavLocation(UAV_id, path[0]);
+
+                        height = db.getUavHeight(event.getVehicle().toString());
+                        PlanControl pc = buildPlanLoiter(event.getVehicle().toString(), getConsole().getMission(),
+                                path[path.length - 1], 10, height, 25.0);
+
+                        System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                    }
+                    else {
+                        // Envio o caminho para o drone
+                        height = db.getUavHeight(event.getVehicle().toString());
+                        PlanControl pc = buildPlan(event.getVehicle().toString(), -1, getConsole().getMission(), path, vel,
+                                height);
+                        System.out.println(sendPlanToVehicle(event.getVehicle().toString(), getConsole(), pc));
+                    }
+
+
                 }
                 else if (db.getOrderState(OrderId).equals("entregue")) {
                     // caso o estado da ecomenda já estaja "entregue" então o drone vai fazer loiter ao armazém
@@ -673,7 +689,7 @@ public class ProcessOrders extends ConsolePanel {
                     path = getPath(OrderId, "regresso");
 
                     whareHouse = path[path.length - 1];
-                    
+
                     height = db.getUavHeight(event.getVehicle().toString());
                     PlanControl pc = buildPlanLoiter(event.getVehicle().toString(), getConsole().getMission(),
                             whareHouse, 10, height, 25.0);
@@ -701,7 +717,7 @@ public class ProcessOrders extends ConsolePanel {
             for (int i = 0; i < vehicles_list.length; i++) {
                 aux.add(vehicles_list[i].getName());
             }
-            
+
             Vector<String> toRemove = new Vector<String>();
 
             for (String uav_name : UAV_map) {
@@ -711,9 +727,9 @@ public class ProcessOrders extends ConsolePanel {
                     toRemove.add(uav_name);
                 }
             }
-            
+
             // remove do map de UAVs
-            
+
             for(String uav_name: toRemove) {
                 UAV_map.remove(UAV_map.indexOf(uav_name));
                 System.out.println("UAV "+uav_name +" removido");
@@ -737,10 +753,10 @@ public class ProcessOrders extends ConsolePanel {
                 LocationType armazem_loc = new LocationType();
 
                 armazem_loc = db.getWarehouseLoc();
-                
+
                 height = db.getUavHeight(vehicles_list[i].getName());
                 System.out.println("Altura: "+height);
-                
+
                 PlanControl pc = buildPlanLoiter(vehicles_list[i].getName(), getConsole().getMission(), armazem_loc,
                         10, height, 25.0);
 
@@ -780,12 +796,13 @@ public class ProcessOrders extends ConsolePanel {
          */
 
         // if(weather_info[0]<50 && weather_info[0]>-10 && weather_info[1] < 24 && (int)(weather_info[2]/100) != 5) {
-        System.out.println("Condições atmosféricas dentro dos limites");
+        
         Vector<Integer> Orders;
 
         Orders = db.getNewOrders();
 
         for (Integer id : Orders) {
+            System.out.println("Condições atmosféricas dentro dos limites");
             System.out.println(id);
 
             // ver o caminho que a entrega tem de fazer
@@ -801,7 +818,7 @@ public class ProcessOrders extends ConsolePanel {
             if (db.getUavAvailability(db.getDroneId(drone))) {
                 System.out.println("drone disponivel");
                 path = getPath(id, "entrega");
-                
+
                 height = db.getUavHeight(drone);
 
                 PlanControl pc = buildPlan(drone, id, getConsole().getMission(), path, vel, height);
