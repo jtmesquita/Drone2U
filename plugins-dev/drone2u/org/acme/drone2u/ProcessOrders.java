@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
@@ -72,6 +73,10 @@ import pt.lsts.neptus.plugins.Popup;
 import pt.lsts.neptus.plugins.Popup.POSITION;
 import pt.lsts.neptus.plugins.update.Periodic;
 import pt.lsts.neptus.types.coord.LocationType;
+import pt.lsts.neptus.types.map.AbstractElement;
+import pt.lsts.neptus.types.map.MapGroup;
+import pt.lsts.neptus.types.map.MapType;
+import pt.lsts.neptus.types.map.MarkElement;
 import pt.lsts.neptus.types.mission.MissionType;
 import pt.lsts.neptus.types.mission.TransitionType;
 import pt.lsts.neptus.types.mission.plan.PlanType;
@@ -100,7 +105,29 @@ public class ProcessOrders extends ConsolePanel {
     int last_order_id = 256;
 
     public ProcessOrders(ConsoleLayout console) {
-        super(console);        
+        super(console);
+        
+        // chamada da função para conetar à base de dados
+        if (!db.isConnected()) {
+            Connection conn = db.connect();
+            db.setSchema();
+        }
+        
+        ArrayList<LocationType> waypoints = db.getWaypoints();
+        
+        if(waypoints != null) {                      
+            for(LocationType waypoint : waypoints) {
+                addMark(waypoint, waypoint.getName());                
+            }            
+        }
+        
+        ArrayList<LocationType> warehouses = db.getWarehouses();
+        
+        if(warehouses != null) {                     
+            for(LocationType warehouse : warehouses) {
+                addMark(warehouse, warehouse.getName());                
+            }            
+        }        
     }
 
     @Override
@@ -189,14 +216,6 @@ public class ProcessOrders extends ConsolePanel {
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
         setLayout(groupLayout);
-    }
-
-    @Periodic(millisBetweenUpdates = 1000) // a cada 1 segundo é chamada a função
-    public void updateGui() {
-        guiPanel.refreshTableEstadoUavs();
-        guiPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
-        guiPanel.refreshOther();
-        guiPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
     }
 
     public boolean sendPlanToVehicle(String vehicleID, ConsoleLayout cl, PlanControl pspec) {
@@ -576,11 +595,13 @@ public class ProcessOrders extends ConsolePanel {
     /**
      * Função que verifica qual a manobra que um drone está a executar e atualiza a disponibilidade de cada drone
      */
-    @Periodic(millisBetweenUpdates = 1000 * 5) // a cada 60segundos é chamada a função
+    /*@Periodic(millisBetweenUpdates = 1000 * 5) // a cada 60segundos é chamada a função*/
     public void checkManeuver() {
         String raw_maneuver = null;
         String[] maneuver_aux;
         String maneuver = "Vehicle unavailable";
+        
+        //System.out.println("checkManeuver");
 
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
 
@@ -705,10 +726,12 @@ public class ProcessOrders extends ConsolePanel {
         }
     }
 
-    //@Periodic(millisBetweenUpdates = 1000 * 5) // a cada 5segundos é chamada a função
-    @Subscribe
-    public void checkVehicles(ConsoleEventVehicleStateChanged event) {
+    //@Subscribe ConsoleEventVehicleStateChanged
+    /*@Periodic(millisBetweenUpdates = 1000 * 5) // a cada 5segundos é chamada a função*/    
+    public void checkVehicles() {
         ImcSystem vehicles_list[] = ImcSystemsHolder.lookupActiveSystemVehicles();
+        
+        //System.out.println("checkVehicles");
 
         // significa que algum UAV deixou de estar em serviço
         if (vehicles_list.length < UAV_map.size()) {
@@ -735,9 +758,16 @@ public class ProcessOrders extends ConsolePanel {
                 System.out.println("UAV "+uav_name +" removido");
             }
         }
+        
+        //System.out.println("vehicles_list.length = "+vehicles_list.length);
 
         // faz loiter a um novo veículo
         for (int i = 0; i < vehicles_list.length; i++) {
+            
+            //System.out.println("vehicles_list = "+vehicles_list[i].getName());
+            //System.out.println("UAV_map.indexOf = "+UAV_map.indexOf(vehicles_list[i].getName()));
+            
+            
             if (UAV_map.indexOf(vehicles_list[i].getName()) == -1) {
                 System.out.println("Ainda nao contém o UAV: " + vehicles_list[i].getName());
                 UAV_map.add(vehicles_list[i].getName());
@@ -773,7 +803,7 @@ public class ProcessOrders extends ConsolePanel {
     /**
      * Função que verifica se alguma encomenda está pronta para ser enviada
      */
-    @Periodic(millisBetweenUpdates = 1000 * 10) // a cada 10segundos é chamada a função
+    /*@Periodic(millisBetweenUpdates = 1000 * 10) // a cada 10segundos é chamada a função*/
     public void checkNewOrders() {
 
         // chamada da função para conetar à base de dados
@@ -814,7 +844,13 @@ public class ProcessOrders extends ConsolePanel {
             /*
              * Antes de enviar o drone verififar mesmo a disponibilidade dele
              *
-             */
+                 @Periodic(millisBetweenUpdates = 1000) // a cada 1 segundo é chamada a função
+    public void updateGui() {
+        guiPanel.refreshTableEstadoUavs();
+        guiPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
+        guiPanel.refreshOther();
+        guiPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
+    }*/
             if (db.getUavAvailability(db.getDroneId(drone))) {
                 System.out.println("drone disponivel");
                 path = getPath(id, "entrega");
@@ -854,30 +890,54 @@ public class ProcessOrders extends ConsolePanel {
         // System.out.println("Condições atomosféricas adversas");
 
     }
-
-    /**
-     * Função de teste
-     */
-    public void TesteRota() {
-
-        checkNewOrders();
-
-        /*
-         * LocationType[] path;
-         * 
-         * path = getPath(251);
-         * 
-         * PlanControl pc = buildPlan("x8-02", getConsole().getMission(),path, 20, 700);
-         * 
-         * System.out.println(sendPlanToVehicle("x8-02", getConsole(), pc));
-         * 
-         * database.OrderStateUpdate(151, "enviada");
-         */
+    
+    private MapType getMap(MissionType mt) {
+        MapGroup mg = MapGroup.getMapGroupInstance(mt);
+        return mg.getMaps()[0];     
+    }
+    
+    private void addMark(LocationType loc, String name) {
+        MissionType mission = getConsole().getMission();
+        MapType map = getMap(mission);
+        MapGroup mg = MapGroup.getMapGroupInstance(mission);
+        AbstractElement existing = null;
+        AbstractElement[] elems = mg.getMapObjectsByID(name);
+        if (elems != null && elems.length > 0)
+            existing = elems[0];
+        
+        MarkElement el = new MarkElement(map.getMapGroup(), map);
+        
+        if (existing != null) {
+            if (existing instanceof MarkElement) {
+                el = (MarkElement)existing;
+                NeptusLog.pub().warn("Object with name "+name+" got a position update");
+            }
+            else {
+                NeptusLog.pub().warn("Object with name "+name+" was removed from the map");
+                existing.getParentMap().remove(name);
+            }
+        }
+        el.setId(name);
+        el.setCenterLocation(loc);
+        map.addObject(el);        
 
     }
+    
+    
+    
+    @Periodic(millisBetweenUpdates = 1000 * 5)
+    public void processOrders() {
+        checkNewOrders();
+        checkVehicles();
+        checkManeuver();        
+    }
+    
+    @Periodic(millisBetweenUpdates = 1000) // a cada 1 segundo é chamada a função
+    public void updateGui() {
+        guiPanel.refreshTableEstadoUavs();
+        guiPanel.refreshTableEncomendas(); // atualiza GUI tabela encomendas
+        guiPanel.refreshOther();
+        guiPanel.refreshWeather(); // atualiza as condições meteorológicas na GUI
+    }
 
-    // @Subscribe
-    // public void on2(ConsoleEventVehicleStateChanged event) {
-    // System.out.println(event.getState().toString());
-    // }
 }

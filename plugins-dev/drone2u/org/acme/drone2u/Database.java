@@ -776,56 +776,122 @@ public class Database {
         }
     }
 
+    public int getNumberOrders(String filter) {
+        
+        ResultSet rs1;
+        String query;
 
+        if(filter.equals("All")) {
+            query = "SELECT COUNT(*) " +
+                    "FROM wprota "+
+                    "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                    "LEFT JOIN drone USING(id_d)";
+        }
+        else {
+            query = "SELECT COUNT(*) " +
+                    "FROM wprota  " +
+                    "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                    "LEFT JOIN drone USING(id_d) " +
+                    "WHERE drone.nome_drone = '"+filter+"' ";           
+        }
+                
+        rs1 = execute(query);
+        try {
 
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println("getNumberOrders "+e);
+            return -1;
+        }               
+    }
+    
+    /*public int getNumberOrders(String filter) {
+        
+        ResultSet rs1;
+        
+        String query = "SELECT COUNT(*) " +
+            "FROM wprota  " +
+            "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+            "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+            "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+            "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+            "LEFT JOIN drone USING(id_d) " +
+            "WHERE drone.nome_drone = '"+filter+"' ";
+        
+        rs1 = execute(query);
+        try {
 
+            rs1.next();
+            String res = rs1.getString("count");
+            return Integer.parseInt(res);
+        }
+        catch (Exception e){
+            System.err.println("getNumberOrders "+e);
+            return -1;
+        }          
+    
+    }*/
 
 
     /**
      * Consulta de informação relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
      * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada
      */
-    public ArrayList<ArrayList<String>> getEncomendas() {
+    public ArrayList<ArrayList<String>> getOrders(String filter) {
 
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
 
         ResultSet rs1;
-
-
-        /*String query = "SELECT nome_drone, " +
-                "encomenda.id_e," +
-                "armazem.nome as arm_nome, " +
-                "concat(armazem.latitude, ' ', armazem.longitude) as loc_inicial_arm, " +
-                "pt_recol.nome as pt_recol_nome, " +
-                "concat(pt_recol.latitude, ' ', pt_recol.longitude) as loc_inicial_ponto, " +
-                "pt_entr.nome as pt_entr_nome, " +
-                "concat(pt_entr.latitude, ' ', pt_entr.longitude) as loc_final, " +
-                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
-                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
-                "FROM entrega  " +
-                "LEFT JOIN encomenda USING(id_e) " +
-                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
-                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
-                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
-                "LEFT JOIN drone USING(id_d)";*/
-
-        String query = "SELECT nome_drone, " +
-                "encomenda.id_e," +
-                "armazem.nome as arm_nome, " +
-                "armazem.morada_arm, " +
-                "pt_recol.nome as pt_recol_nome, " +
-                "pt_recol.morada_arm as morada_pt_recol, " +
-                "pt_entr.nome as pt_entr_nome, " +
-                "pt_entr.morada_arm as morada_pt_entr, " +
-                "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
-                "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
-                "FROM wprota  " +
-                "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
-                "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
-                "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
-                "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
-                "LEFT JOIN drone USING(id_d) " +
-                "ORDER BY id_e DESC";
+        String query;
+        
+        if(filter.equals("All")) {
+            query = "SELECT nome_drone, " +
+                    "encomenda.id_e," +
+                    "armazem.nome as arm_nome, " +
+                    "armazem.morada_arm, " +
+                    "pt_recol.nome as pt_recol_nome, " +
+                    "pt_recol.morada_arm as morada_pt_recol, " +
+                    "pt_entr.nome as pt_entr_nome, " +
+                    "pt_entr.morada_arm as morada_pt_entr, " +
+                    "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                    "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
+                    "FROM wprota  " +
+                    "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                    "LEFT JOIN drone USING(id_d) " +
+                    "ORDER BY id_e DESC";
+        }
+        else {
+            query = "SELECT nome_drone, " +
+                    "encomenda.id_e," +
+                    "armazem.nome as arm_nome, " +
+                    "armazem.morada_arm, " +
+                    "pt_recol.nome as pt_recol_nome, " +
+                    "pt_recol.morada_arm as morada_pt_recol, " +
+                    "pt_entr.nome as pt_entr_nome, " +
+                    "pt_entr.morada_arm as morada_pt_entr, " +
+                    "concat(encomenda.data_env,' ', encomenda.hora_env) as data_env, " +
+                    "concat(encomenda.data_entr,' ', encomenda.hora_entr) as data_entr " +
+                    "FROM wprota  " +
+                    "LEFT JOIN encomenda ON wprota.id_wr = id_e " +
+                    "LEFT JOIN armazem ON encomenda.armazem_recolha = armazem.id_a " +
+                    "LEFT JOIN ponto_entrega_recolha pt_entr ON ponto_entrega = pt_entr.id_er " +
+                    "LEFT JOIN ponto_entrega_recolha pt_recol ON ponto_recolha = pt_recol.id_er " +
+                    "LEFT JOIN drone USING(id_d) " +
+                    "WHERE drone.nome_drone = '"+filter+"' " +
+                    "ORDER BY id_e DESC";            
+        }
 
         rs1 = execute(query);
         try {
@@ -860,7 +926,7 @@ public class Database {
      * Consulta de informação (filtrada) relativa as encomendas (ID_Uav, ID_Encomenda, Localização inicial, Localização final, Data/hora envio e entrega)
      * @return uma ArrayList de uma ArrayList com toda a info da tabela consultada
      */
-    public ArrayList<ArrayList<String>> getEncomendas(String filter) {
+   /* public ArrayList<ArrayList<String>> getOrders(String filter) {
 
         ArrayList<ArrayList<String>> table = new ArrayList<ArrayList<String>>();
 
@@ -906,6 +972,66 @@ public class Database {
             }
 
             return table;
+        }
+        catch (Exception e){
+            System.err.println("getEncomendas "+e);
+            return null;
+        }
+    }*/
+    
+    public ArrayList<LocationType> getWaypoints() {        
+        ArrayList<LocationType> waypoints = new ArrayList<LocationType>();
+
+        ResultSet rs1;
+
+        String query = "SELECT id_w, latitude, longitude FROM waypoint ORDER BY id_w";
+
+        rs1 = execute(query);
+        try {
+            int i = 0;
+            while(rs1.next()) {
+                LocationType loc = new LocationType(); 
+                
+                loc.setLongitudeDegs(rs1.getDouble("longitude"));
+                loc.setLatitudeDegs(rs1.getDouble("latitude"));                
+                loc.setName("wp_"+i);
+                
+                waypoints.add(loc);
+                i++;
+            }
+
+            return waypoints;
+        }
+        catch (Exception e){
+            System.err.println("getEncomendas "+e);
+            return null;
+        }
+    }
+    
+    public ArrayList<LocationType> getWarehouses() {        
+        ArrayList<LocationType> waypoints = new ArrayList<LocationType>();
+
+        ResultSet rs1;
+
+        String query = "SELECT nome, morada_arm, latitude, longitude FROM armazem";
+
+        rs1 = execute(query);
+        try {        
+            while(rs1.next()) {
+                LocationType loc = new LocationType();
+                
+                String nome = rs1.getString("nome");
+                String morada = rs1.getString("morada_arm");                   
+               
+                loc.setLongitudeDegs(rs1.getDouble("longitude"));
+                loc.setLatitudeDegs(rs1.getDouble("latitude"));
+           
+                loc.setName(nome+" ("+morada+")");
+                
+                waypoints.add(loc);                
+            }
+
+            return waypoints;
         }
         catch (Exception e){
             System.err.println("getEncomendas "+e);
